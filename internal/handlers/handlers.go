@@ -1,4 +1,4 @@
-package handler
+package handlers
 
 import (
 	"github.com/gtngzlv/url-shortener/internal/pkg"
@@ -28,7 +28,7 @@ func PostURL(w http.ResponseWriter, r *http.Request) {
 
 	shorted := pkg.GenerateShortURL(string(body))
 	w.Header().Add("Content-Type", "text/plain")
-	w.WriteHeader(201)
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte("http://localhost:8080/" + shorted))
 }
 

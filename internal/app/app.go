@@ -1,15 +1,15 @@
 package app
 
 import (
-	"github.com/gtngzlv/url-shortener/internal/handler"
+	"github.com/gtngzlv/url-shortener/internal/handlers"
 	"net/http"
 )
 
 func webhook(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		handler.PostURL(w, r)
+		handlers.PostURL(w, r)
 	} else if r.Method == http.MethodGet {
-		handler.GetURL(w, r)
+		handlers.GetURL(w, r)
 	} else {
 		w.WriteHeader(400)
 	}
