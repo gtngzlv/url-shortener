@@ -1,20 +1,14 @@
 package app
 
 import (
+	"github.com/go-chi/chi/v5"
 	"github.com/gtngzlv/url-shortener/internal/handlers"
 	"net/http"
 )
 
-func webhook(w http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodPost {
-		handlers.PostURL(w, r)
-	} else if r.Method == http.MethodGet {
-		handlers.GetURL(w, r)
-	} else {
-		w.WriteHeader(400)
-	}
-}
-
 func Run() error {
-	return http.ListenAndServe(":8080", http.HandlerFunc(webhook))
+	router := chi.NewRouter()
+	router.Get("/{value}", handlers.GetURL)
+	router.Post("/", handlers.PostURL)
+	return http.ListenAndServe(":8080", router)
 }
