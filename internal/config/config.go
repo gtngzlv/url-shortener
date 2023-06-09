@@ -60,14 +60,14 @@ func ParseAddresses() {
 	flag.Parse()
 	serverAddr.checkFlagProvided()
 	finalAddr.checkFlagProvided()
-	os.Setenv("SRV_ADDR", serverAddr.String())
-	os.Setenv("FIN_ADDR", finalAddr.String())
+	os.Setenv("SERVER_ADDRESS", serverAddr.String())
+	os.Setenv("BASE_URL", finalAddr.String())
 }
 
 func GetFinAddr() string {
-	return "http://" + os.Getenv("FIN_ADDR")
+	return "http://" + os.Getenv("BASE_URL")
 }
 
 func GetSrvAddr() string {
-	return os.Getenv("SRV_ADDR")
+	return os.Getenv("SERVER_ADDRESS")
 }
