@@ -64,10 +64,10 @@ func ParseAddresses() {
 	os.Setenv("BASE_URL", finalAddr.String())
 }
 
-func GetFinAddr() string {
+func getFinAddr() string {
 	return "http://" + os.Getenv("BASE_URL")
 }
 
-func GetSrvAddr() string {
+func getSrvAddr() string {
 	return os.Getenv("SERVER_ADDRESS")
 }
