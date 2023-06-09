@@ -27,6 +27,7 @@ func (a *NetAddress) Set(s string) error {
 				return err
 			}
 			a.Port = port
+			a.set = true
 			return nil
 		}
 	}
