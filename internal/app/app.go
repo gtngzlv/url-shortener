@@ -1,10 +1,12 @@
 package app
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
+
 	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/handlers"
-	"net/http"
 )
 
 func Run() error {

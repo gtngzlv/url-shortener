@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/gtngzlv/url-shortener/internal/app"
 	"log"
+
+	"github.com/gtngzlv/url-shortener/internal/app"
 )
 
 func main() {
