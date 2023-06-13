@@ -39,6 +39,7 @@ func PostURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetURL(w http.ResponseWriter, r *http.Request) {
+
 	err := r.ParseForm()
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -50,4 +51,5 @@ func GetURL(w http.ResponseWriter, r *http.Request) {
 	longURL := pkg.GetFromStorage(val[1:])
 	w.Header().Add("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+
 }
