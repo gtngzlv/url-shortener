@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/gtngzlv/url-shortener/internal/storage"
 	"io"
 	"log"
 	"net/http"
@@ -47,7 +48,7 @@ func GetURL(w http.ResponseWriter, r *http.Request) {
 	}
 	val := r.URL.Path
 
-	longURL := pkg.GetFromStorage(val[1:])
+	longURL := storage.GetFromStorage(val[1:])
 	w.Header().Add("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
