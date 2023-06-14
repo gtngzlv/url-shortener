@@ -1,9 +1,10 @@
 package pkg
 
 import (
-	"github.com/gtngzlv/url-shortener/internal/storage"
 	"math/rand"
 	"strings"
+
+	"github.com/gtngzlv/url-shortener/internal/storage"
 )
 
 func randStringRunes() string {
@@ -25,10 +26,6 @@ func SplitString(s string, separators []rune) []string {
 		return false
 	}
 	return strings.FieldsFunc(s, f)
-}
-
-func GetFromStorage(key string) string {
-	return storage.Storage[key]
 }
 
 func SetShortURL(baseURL string) string {
