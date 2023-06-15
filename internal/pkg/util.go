@@ -3,11 +3,9 @@ package pkg
 import (
 	"math/rand"
 	"strings"
-
-	"github.com/gtngzlv/url-shortener/internal/storage"
 )
 
-func randStringRunes() string {
+func RandStringRunes() string {
 	var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 	b := make([]rune, 8)
 	for i := range b {
@@ -26,10 +24,4 @@ func SplitString(s string, separators []rune) []string {
 		return false
 	}
 	return strings.FieldsFunc(s, f)
-}
-
-func SetShortURL(baseURL string) string {
-	shortURL := randStringRunes()
-	storage.Storage[shortURL] = baseURL
-	return shortURL
 }

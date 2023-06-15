@@ -14,6 +14,7 @@ func Run() error {
 	logger.NewLogger()
 	router := chi.NewRouter()
 	router.Get("/{value}", logger.WithLogging(http.HandlerFunc(handlers.GetURL)))
+	router.Post("/api/shorten", logger.WithLogging(http.HandlerFunc(handlers.PostAPIShorten)))
 	router.Post("/", logger.WithLogging(http.HandlerFunc(handlers.PostURL)))
 	config.ParseAddresses()
 	return http.ListenAndServe(config.GetSrvAddr(), router)
