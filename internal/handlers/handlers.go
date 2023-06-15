@@ -1,56 +1,82 @@
 package handlers
 
 import (
-	"github.com/gtngzlv/url-shortener/internal/storage"
+	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 
-	"github.com/gtngzlv/url-shortener/internal/config"
-	"github.com/gtngzlv/url-shortener/internal/pkg"
+	"github.com/go-chi/chi/v5"
+
+	"github.com/gtngzlv/url-shortener/internal/storage"
+	"github.com/gtngzlv/url-shortener/internal/storage/filestorage"
 )
 
-func PostURL(w http.ResponseWriter, r *http.Request) {
-	seps := []rune{';'}
-	contentType := r.Header.Get("Content-Type")
-	if pkg.SplitString(contentType, seps)[0] != "text/plain" {
+func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
+	var (
+		request  APIShortenRequest
+		response APIShortenResponse
+		err      error
+	)
+
+	bytes, err := io.ReadAll(r.Body)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Print("PostURL: incorrect format of content-type")
+		log.Fatalf("PostURL: error: %s while reading body", err)
+		return
+	}
+	err = json.Unmarshal(bytes, &request)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Fatalf("PostURL: error: %s while reading body", err)
 		return
 	}
 
+	shorted, _ := storage.SaveURL(request.URL)
+	response.Result = a.cfg.ResultURL + "/" + shorted
+	res, err := json.Marshal(response)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Fatalf("PostURL: error: %s while reading body", err)
+		return
+	}
+	w.Header().Add("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(res)
+}
+
+func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("PostURL: error: %s while reading body", err)
+		log.Fatalf("PostURL: error: %s while reading body", err)
 		return
 	}
 
 	if len(string(body)) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Println("PostURL: Empty request body")
+		log.Fatal("PostURL: Empty request body")
 		return
 	}
 
-	shorted := pkg.SetShortURL(string(body))
+	shorted, err := storage.SaveURL(string(body))
+	if err != nil {
+		log.Fatalf("Failed to save URL in storage")
+		return
+	}
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	finAddr := config.GetFinAddr()
-	w.Write([]byte(finAddr + "/" + shorted))
+
+	_, err = w.Write([]byte(a.cfg.ResultURL + "/" + shorted))
+	if err != nil {
+		log.Fatalf("PostURL: Failed to write in body")
+	}
 }
 
-func GetURL(w http.ResponseWriter, r *http.Request) {
-
-	err := r.ParseForm()
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("GetURL: err %s while parse form\n", err)
-		return
-	}
-	val := r.URL.Path
-
-	longURL := storage.GetFromStorage(val[1:])
-	w.Header().Add("Location", longURL)
+func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
+	val := chi.URLParam(r, "shortID")
+	longURL := filestorage.GetFromCache(val)
+	w.Header().Set("content-type", "text/plain")
+	w.Header().Set("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
-
 }

@@ -3,72 +3,42 @@ package config
 import (
 	"flag"
 	"os"
-	"strconv"
 	"strings"
 )
 
-type NetAddress struct {
-	Host string
-	Port int
-	set  bool
+type AppConfig struct {
+	Host            string
+	ResultURL       string
+	FileStoragePath string
 }
 
-func (a *NetAddress) String() string {
-	return a.Host + ":" + strconv.Itoa(a.Port)
+func LoadConfig() *AppConfig {
+	config := &AppConfig{}
+	getArgs(config)
+	getENVs(config)
+	return config
 }
 
-func (a *NetAddress) Set(s string) error {
-	hp := strings.Split(s, ":")
-	if len(hp) != 2 {
-		if hp[0] == "http" {
-			a.Host = hp[1][2:]
-			port, err := strconv.Atoi(hp[2])
-			if err != nil {
-				return err
-			}
-			a.Port = port
-			a.set = true
-			return nil
-		}
-	}
-
-	port, err := strconv.Atoi(hp[1])
-	if err != nil {
-		return err
-	}
-	a.Host = hp[0]
-	a.Port = port
-	a.set = true
-	return nil
-}
-
-func (a *NetAddress) setDefault() {
-	a.Host = "localhost"
-	a.Port = 8080
-}
-
-func (a *NetAddress) checkFlagProvided() {
-	if !a.set {
-		a.setDefault()
-	}
-}
-
-func ParseAddresses() {
-	serverAddr := new(NetAddress)
-	finalAddr := new(NetAddress)
-	flag.Var(serverAddr, "a", "Server run: net address host:port")
-	flag.Var(finalAddr, "b", "Returned address: net address host:port")
+func getArgs(cfg *AppConfig) {
+	flag.StringVar(&cfg.Host, "a", "localhost:8080", "Default Host:port")
+	flag.StringVar(&cfg.ResultURL, "b", "http://localhost:8080", "Default result URL")
+	flag.StringVar(&cfg.FileStoragePath, "f", "/tmp/short-url-db.json", "Default File Storage Path")
 	flag.Parse()
-	serverAddr.checkFlagProvided()
-	finalAddr.checkFlagProvided()
-	os.Setenv("SERVER_ADDRESS", serverAddr.String())
-	os.Setenv("BASE_URL", finalAddr.String())
 }
 
-func GetFinAddr() string {
-	return "http://" + os.Getenv("BASE_URL")
-}
+func getENVs(cfg *AppConfig) {
+	envRunAddr := strings.TrimSpace(os.Getenv(ServerAddress))
+	if envRunAddr != "" {
+		cfg.Host = envRunAddr
+	}
 
-func GetSrvAddr() string {
-	return os.Getenv("SERVER_ADDRESS")
+	envBaseURL := strings.TrimSpace(os.Getenv(BaseURL))
+	if envBaseURL != "" {
+		cfg.ResultURL = envBaseURL
+	}
+
+	fileStorageFile := strings.TrimSpace(os.Getenv(FileStoragePath))
+	if fileStorageFile != "" {
+		cfg.FileStoragePath = fileStorageFile
+	}
 }
