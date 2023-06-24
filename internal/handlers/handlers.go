@@ -95,5 +95,5 @@ func GetURL(w http.ResponseWriter, r *http.Request) {
 
 	longURL := storage.GetFromStorage(val[1:])
 	w.Header().Add("Location", longURL)
-	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.WriteHeader(http.StatusOK)
 }
