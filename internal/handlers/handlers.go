@@ -9,7 +9,6 @@ import (
 	"net/http"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
-	"github.com/gtngzlv/url-shortener/internal/pkg"
 )
 
 func PostAPIShorten(w http.ResponseWriter, r *http.Request) {
@@ -18,14 +17,6 @@ func PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 		response APIShortenResponse
 		err      error
 	)
-
-	seps := []rune{';'}
-	contentType := r.Header.Get("Content-Type")
-	if pkg.SplitString(contentType, seps)[0] != "application/json" {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Print("PostAPIShorten: incorrect format of content-type")
-		return
-	}
 
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -55,14 +46,6 @@ func PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 }
 
 func PostURL(w http.ResponseWriter, r *http.Request) {
-	seps := []rune{';'}
-	contentType := r.Header.Get("Content-Type")
-	if pkg.SplitString(contentType, seps)[0] != "text/plain" {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Print("PostURL: incorrect format of content-type")
-		return
-	}
-
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

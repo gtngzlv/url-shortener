@@ -50,12 +50,6 @@ func TestPostAPIShorten(t *testing.T) {
 			expectedCode: 201,
 			body:         map[string]string{"url": "https://practicum.yandex.ru"},
 		},
-		{
-			name:         "400 ok",
-			contentType:  "multipart/form-data",
-			expectedCode: 400,
-			body:         map[string]string{"url": "https://practicum.yandex.ru"},
-		},
 	}
 
 	for _, tt := range testCases {
@@ -85,12 +79,6 @@ func TestPostHandler(t *testing.T) {
 			contentType:  "text/plain",
 			expectedCode: 201,
 			body:         "ya.ru",
-		},
-		{
-			name:         "400",
-			contentType:  "applicaiton/json",
-			expectedCode: 400,
-			body:         "google.com",
 		},
 	}
 
