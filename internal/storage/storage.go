@@ -8,15 +8,6 @@ func GetValueFromStorage(key string) string {
 	return Storage[key]
 }
 
-func ExistValueInStorage(value string) bool {
-	for _, v := range Storage {
-		if v == value {
-			return true
-		}
-	}
-	return false
-}
-
 func SetShortURL(baseURL string) string {
 	shortURL := pkg.RandStringRunes()
 	Storage[shortURL] = baseURL

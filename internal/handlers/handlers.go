@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"github.com/go-chi/chi/v5"
 	"github.com/gtngzlv/url-shortener/internal/storage"
 	"io"
 	"log"
@@ -14,7 +15,7 @@ import (
 func PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	var (
 		request  APIShortenRequest
-		response APIShortenRequest
+		response APIShortenResponse
 		err      error
 	)
 
@@ -41,7 +42,7 @@ func PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 
 	shorted := storage.SetShortURL(request.URL)
 	finAddr := config.GetFinAddr()
-	response.URL = finAddr + "/" + shorted
+	response.Result = finAddr + "/" + shorted
 	res, err := json.Marshal(response)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -84,22 +85,10 @@ func PostURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetURL(w http.ResponseWriter, r *http.Request) {
-	//err := r.ParseForm()
-	//if err != nil {
-	//	w.WriteHeader(http.StatusBadRequest)
-	//	log.Printf("GetURL: err %s while parse form\n", err)
-	//	return
-	//}
+	val := chi.URLParam(r, "shortID")
 
-	val := r.URL.Path
-
-	if storage.ExistValueInStorage(val[1:]) {
-		w.Header().Add("Location", val[1:])
-		w.WriteHeader(http.StatusTemporaryRedirect)
-		return
-	}
-
-	longURL := storage.GetValueFromStorage(val[1:])
-	w.Header().Add("Location", longURL)
+	longURL := storage.GetValueFromStorage(val)
+	w.Header().Set("content-type", "text/plain")
+	w.Header().Set("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
