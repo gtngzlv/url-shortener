@@ -84,16 +84,22 @@ func PostURL(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetURL(w http.ResponseWriter, r *http.Request) {
-	err := r.ParseForm()
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		log.Printf("GetURL: err %s while parse form\n", err)
-		return
-	}
+	//err := r.ParseForm()
+	//if err != nil {
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	log.Printf("GetURL: err %s while parse form\n", err)
+	//	return
+	//}
 
 	val := r.URL.Path
 
-	longURL := storage.GetFromStorage(val[1:])
+	if storage.ExistValueInStorage(val[1:]) {
+		w.Header().Add("Location", val[1:])
+		w.WriteHeader(http.StatusTemporaryRedirect)
+		return
+	}
+
+	longURL := storage.GetValueFromStorage(val[1:])
 	w.Header().Add("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
