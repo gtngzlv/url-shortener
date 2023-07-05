@@ -78,6 +78,9 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 
 func (f *FileStorage) Get(shortURL string) (string, error) {
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		f.log.Errorf("FileStorage Get: failed to get from file")
+	}
 	defer func(file *os.File) {
 		err := file.Close()
 		if err != nil {
