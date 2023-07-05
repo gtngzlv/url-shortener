@@ -29,6 +29,7 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	}
 
 	shorted, err := a.storage.Save(request.URL)
+	a.log.Infof("Saved URL: %s", shorted)
 	if err != nil {
 		a.log.Errorf("Error while saving json short url: %s", err)
 	}
@@ -51,6 +52,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 		a.log.Errorf("PostURL: error: %s while reading body", err)
 		return
 	}
+	a.log.Infof("Received URL: %s", string(body))
 
 	if len(string(body)) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
@@ -58,7 +60,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorted, err := a.storage.Get(string(body))
+	shorted, err := a.storage.Save(string(body))
 	if err != nil {
 		a.log.Errorf("Failed to save URL in storage")
 		return
