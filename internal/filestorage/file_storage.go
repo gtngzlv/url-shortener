@@ -111,6 +111,9 @@ func (f *FileStorage) Get(shortURL string) (string, error) {
 
 func (f *FileStorage) getShortURLFromStorage(fullURL string) string {
 	file, err := os.OpenFile(f.path, os.O_RDONLY|os.O_CREATE, 0666)
+	if err != nil {
+		f.log.Errorf("getShortURLFromStorage: failed to get from file")
+	}
 	defer file.Close()
 
 	if err != nil {
