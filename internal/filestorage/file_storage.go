@@ -31,9 +31,9 @@ func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
 }
 
 func (f *FileStorage) Save(fullURL string) (string, error) {
-	if shortURL := f.getShortURLFromStorage(fullURL); shortURL != "" {
-		return shortURL, nil
-	}
+	//if shortURL := f.getShortURLFromStorage(fullURL); shortURL != "" {
+	//	return shortURL, nil
+	//}
 
 	if _, err := os.Stat(filepath.Dir(f.path)); os.IsNotExist(err) {
 		f.log.Infof("Creating folder")
@@ -45,7 +45,7 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	defer func(file *os.File) {
-		err := file.Close()
+		err = file.Close()
 		if err != nil {
 			f.log.Errorf("Save FileStorage: failed to close file, err: %s", err)
 		}
@@ -82,7 +82,7 @@ func (f *FileStorage) Get(shortURL string) (string, error) {
 		f.log.Errorf("FileStorage Get: failed to get from file")
 	}
 	defer func(file *os.File) {
-		err := file.Close()
+		err = file.Close()
 		if err != nil {
 			f.log.Errorf("Get FileStorage: failed to close file, err: %s", err)
 		}
