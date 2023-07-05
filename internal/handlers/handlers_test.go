@@ -8,6 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
+	"github.com/gtngzlv/url-shortener/internal/logger"
 	"github.com/gtngzlv/url-shortener/internal/storage"
 )
 
@@ -25,11 +26,12 @@ func TestGetHandler(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			log := logger.NewLogger()
 			cfg := config.LoadConfig()
 			cfg.FileStoragePath = "/tmp/short-url-bd.json"
 
-			storage.Init(cfg)
-			handler := NewApp(cfg)
+			storage.Init(cfg, log)
+			handler := NewApp(cfg, log)
 
 			request := httptest.NewRequest(http.MethodGet, "/", nil)
 			request.URL.Path = tt.query

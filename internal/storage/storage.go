@@ -3,6 +3,7 @@ package storage
 import (
 	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/storage/filestorage"
+	"go.uber.org/zap"
 )
 
 type MyStorage interface {
@@ -10,22 +11,25 @@ type MyStorage interface {
 	Get(shortURL string) (string, error)
 }
 
-var defaultStorage MyStorage
-
-func Init(cfg *config.AppConfig) {
-	defaultStorage = filestorage.Init(cfg)
+type storage struct {
+	defaultStorage MyStorage
 }
 
-func SaveURL(full string) (string, error) {
-	short, err := defaultStorage.Save(full)
+func Init(cfg *config.AppConfig, log zap.SugaredLogger) {
+	var s storage
+	s.defaultStorage = filestorage.Init(log, cfg.FileStoragePath)
+}
+
+func (s *storage) SaveURL(full string) (string, error) {
+	short, err := s.defaultStorage.Save(full)
 	if err != nil {
 		return "", err
 	}
 	return short, nil
 }
 
-func GetFullURL(short string) (string, error) {
-	full, err := defaultStorage.Get(short)
+func (s *storage) GetFullURL(short string) (string, error) {
+	full, err := s.defaultStorage.Get(short)
 	if err != nil {
 		return "", err
 	}

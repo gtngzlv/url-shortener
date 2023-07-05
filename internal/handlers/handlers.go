@@ -3,7 +3,6 @@ package handlers
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -22,13 +21,13 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	bytes, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Fatalf("PostURL: error: %s while reading body", err)
+		a.log.Errorf("PostURL: error: %s while reading body", err)
 		return
 	}
 	err = json.Unmarshal(bytes, &request)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Fatalf("PostURL: error: %s while reading body", err)
+		a.log.Errorf("PostURL: error: %s while reading body", err)
 		return
 	}
 
@@ -37,7 +36,7 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	res, err := json.Marshal(response)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Fatalf("PostURL: error: %s while reading body", err)
+		a.log.Errorf("PostURL: error: %s while reading body", err)
 		return
 	}
 	w.Header().Add("Content-Type", "application/json")
@@ -49,19 +48,19 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Fatalf("PostURL: error: %s while reading body", err)
+		a.log.Errorf("PostURL: error: %s while reading body", err)
 		return
 	}
 
 	if len(string(body)) == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		log.Fatal("PostURL: Empty request body")
+		a.log.Errorf("PostURL: Empty request body")
 		return
 	}
 
 	shorted, err := storage.SaveURL(string(body))
 	if err != nil {
-		log.Fatalf("Failed to save URL in storage")
+		a.log.Errorf("Failed to save URL in storage")
 		return
 	}
 	w.Header().Add("Content-Type", "text/plain")
@@ -69,7 +68,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 
 	_, err = w.Write([]byte(a.cfg.ResultURL + "/" + shorted))
 	if err != nil {
-		log.Fatalf("PostURL: Failed to write in body")
+		a.log.Errorf("PostURL: Failed to write in body")
 	}
 }
 

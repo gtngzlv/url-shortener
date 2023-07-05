@@ -10,9 +10,10 @@ import (
 )
 
 func Run() error {
-	logger.NewLogger()
+
+	log := logger.NewLogger()
 	cfg := config.LoadConfig()
-	storage.Init(cfg)
-	app := handlers.NewApp(cfg)
+	storage.Init(cfg, log)
+	app := handlers.NewApp(cfg, log)
 	return http.ListenAndServe(cfg.Host, app)
 }

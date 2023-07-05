@@ -3,13 +3,12 @@ package filestorage
 import (
 	"bufio"
 	"encoding/json"
-	"log"
+	"go.uber.org/zap"
 	"os"
 	"path/filepath"
 
 	"github.com/google/uuid"
 
-	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/pkg"
 )
 
@@ -20,35 +19,41 @@ type Event struct {
 }
 
 type FileStorage struct {
-	Path string
+	path string
+	log  zap.SugaredLogger
 }
 
-var storage FileStorage
-
-func Init(cfg *config.AppConfig) *FileStorage {
-	storage = FileStorage{
-		Path: cfg.FileStoragePath,
+func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
+	return &FileStorage{
+		path: fileStoragePath,
+		log:  log,
 	}
-	return &storage
 }
 
 func (f *FileStorage) Save(fullURL string) (string, error) {
-	if shortURL := getShortURLFromStorage(fullURL); shortURL != "" {
+	if shortURL := f.getShortURLFromStorage(fullURL); shortURL != "" {
 		return shortURL, nil
 	}
 
-	if _, err := os.Stat(filepath.Dir(storage.Path)); os.IsNotExist(err) {
-		log.Println("Creating folder")
-		err = os.Mkdir(filepath.Dir(storage.Path), 0755)
+	if _, err := os.Stat(filepath.Dir(f.path)); os.IsNotExist(err) {
+		f.log.Infof("Creating folder")
+		err = os.Mkdir(filepath.Dir(f.path), 0755)
 		if err != nil {
-			log.Printf("Error: %s", err)
+			f.log.Infof("Error: %s", err)
 		}
 	}
 
-	file, err := os.OpenFile(storage.Path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
-	log.Println("Created file by path", storage.Path)
+	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			f.log.Errorf("Save FileStorage: failed to close file, err: %s", err)
+		}
+	}(file)
+
+	f.log.Info("Created file by path", f.path)
 	if err != nil {
-		log.Fatalf("FileStorage Save: error while OpenFile is %s", err)
+		f.log.Infof("FileStorage Save: error while OpenFile is %s\n", err)
 		return "", err
 	}
 	event := Event{
@@ -58,25 +63,30 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 	}
 	data, err := json.Marshal(event)
 	if err != nil {
-		log.Fatalf("FileStorage Save: error while json marshal is %s", err)
+		f.log.Infof("FileStorage Save: error while json marshal is %s", err)
 		return "", err
 	}
 	data = append(data, '\n')
 	_, err = file.Write(data)
 	if err != nil {
-		log.Fatalf("FileStorage Save: error while write is %s", err)
+		f.log.Infof("FileStorage Save: error while write is %s", err)
 		return "", nil
 	}
 	WriteToCache(fullURL, event.ShortURL)
 	return event.ShortURL, nil
 }
 
-var Storage = make(map[string]string)
-
 func (f *FileStorage) Get(shortURL string) (string, error) {
-	file, err := os.OpenFile(storage.Path, os.O_RDWR|os.O_CREATE, 0666)
+	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
+	defer func(file *os.File) {
+		err := file.Close()
+		if err != nil {
+			f.log.Errorf("Get FileStorage: failed to close file, err: %s", err)
+		}
+	}(file)
+
 	if err != nil {
-		log.Fatalf("FileStorage Get: error while OpenFile is %s", err)
+		f.log.Infof("FileStorage Get: error while OpenFile is %s", err)
 		return "", nil
 	}
 	r := bufio.NewReader(file)
@@ -96,8 +106,10 @@ func (f *FileStorage) Get(shortURL string) (string, error) {
 	return "", nil
 }
 
-func getShortURLFromStorage(fullURL string) string {
-	file, err := os.OpenFile(storage.Path, os.O_RDONLY|os.O_CREATE, 0666)
+func (f *FileStorage) getShortURLFromStorage(fullURL string) string {
+	file, err := os.OpenFile(f.path, os.O_RDONLY|os.O_CREATE, 0666)
+	defer file.Close()
+
 	if err != nil {
 		return ""
 	}

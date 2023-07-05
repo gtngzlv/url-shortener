@@ -9,13 +9,14 @@ import (
 
 var sugar zap.SugaredLogger
 
-func NewLogger() {
+func NewLogger() zap.SugaredLogger {
 	logger, err := zap.NewDevelopment()
 	if err != nil {
 		panic(err)
 	}
 	defer logger.Sync()
 	sugar = *logger.Sugar()
+	return sugar
 }
 
 type (
