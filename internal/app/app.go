@@ -1,6 +1,8 @@
 package app
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/gtngzlv/url-shortener/internal/filestorage"
 	"net/http"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
@@ -10,9 +12,11 @@ import (
 )
 
 func Run() error {
+	router := chi.NewRouter()
 	log := logger.NewLogger()
 	cfg := config.LoadConfig()
-	storage := storage.Init(cfg, log)
-	app := handlers.NewApp(cfg, log, storage)
-	return http.ListenAndServe(cfg.Host, app)
+	fileStorage := filestorage.Init(log, cfg.FileStoragePath)
+	storage := storage.Init(fileStorage)
+	app := handlers.NewApp(router, cfg, log, storage)
+	return http.ListenAndServe(cfg.Host, app.Router)
 }

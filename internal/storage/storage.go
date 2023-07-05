@@ -1,9 +1,7 @@
 package storage
 
 import (
-	"github.com/gtngzlv/url-shortener/internal/config"
-	"github.com/gtngzlv/url-shortener/internal/storage/filestorage"
-	"go.uber.org/zap"
+	"github.com/gtngzlv/url-shortener/internal/filestorage"
 )
 
 type MyStorage interface {
@@ -15,9 +13,9 @@ type storage struct {
 	defaultStorage MyStorage
 }
 
-func Init(cfg *config.AppConfig, log zap.SugaredLogger) MyStorage {
+func Init(fs *filestorage.FileStorage) MyStorage {
 	var s storage
-	s.defaultStorage = filestorage.Init(log, cfg.FileStoragePath)
+	s.defaultStorage = fs
 	return &s
 }
 

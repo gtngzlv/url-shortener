@@ -12,15 +12,15 @@ import (
 )
 
 type App struct {
-	*chi.Mux
+	Router  *chi.Mux
 	cfg     *config.AppConfig
 	log     zap.SugaredLogger
 	storage storage.MyStorage
 }
 
-func NewApp(cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *App {
+func NewApp(router *chi.Mux, cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *App {
 	app := &App{
-		chi.NewRouter(),
+		router,
 		cfg,
 		log,
 		s,
@@ -30,18 +30,18 @@ func NewApp(cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *
 }
 
 func (a *App) reg() {
-	a.Use(middleware.Compress(5, "text/html",
+	a.Router.Use(middleware.Compress(5, "text/html",
 		"application/x-gzip",
 		"text/plain",
 		"application/json"))
-	a.Use(gzip.MiddlewareCompressGzip)
-	a.Use(logger.WithLogging)
+	a.Router.Use(gzip.MiddlewareCompressGzip)
+	a.Router.Use(logger.WithLogging)
 
-	a.Group(func(r chi.Router) {
+	a.Router.Group(func(r chi.Router) {
 		r.Use(middleware.AllowContentType("application/json"))
 		r.Post("/api/shorten", a.PostAPIShorten)
 	})
 
-	a.Get("/{shortID}", a.GetURL)
-	a.Post("/", a.PostURL)
+	a.Router.Get("/{shortID}", a.GetURL)
+	a.Router.Post("/", a.PostURL)
 }

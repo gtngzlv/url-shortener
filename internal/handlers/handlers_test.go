@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"github.com/go-chi/chi/v5"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -26,12 +27,13 @@ func TestGetHandler(t *testing.T) {
 	}
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			router := chi.NewRouter()
 			log := logger.NewLogger()
 			cfg := config.LoadConfig()
 			cfg.FileStoragePath = "/tmp/short-url-bd.json"
 
 			s := storage.Init(cfg, log)
-			handler := NewApp(cfg, log, s)
+			handler := NewApp(router, cfg, log, s)
 
 			request := httptest.NewRequest(http.MethodGet, "/", nil)
 			request.URL.Path = tt.query
