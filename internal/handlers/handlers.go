@@ -28,7 +28,10 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorted, _ := a.storage.Save(request.URL)
+	shorted, err := a.storage.Save(request.URL)
+	if err != nil {
+		a.log.Errorf("Error while saving json short url: %s", err)
+	}
 	response.Result = a.cfg.ResultURL + "/" + shorted
 	res, err := json.Marshal(response)
 	if err != nil {
