@@ -30,8 +30,8 @@ func TestGetHandler(t *testing.T) {
 			cfg := config.LoadConfig()
 			cfg.FileStoragePath = "/tmp/short-url-bd.json"
 
-			storage.Init(cfg, log)
-			handler := NewApp(cfg, log)
+			s := storage.Init(cfg, log)
+			handler := NewApp(cfg, log, s)
 
 			request := httptest.NewRequest(http.MethodGet, "/", nil)
 			request.URL.Path = tt.query
