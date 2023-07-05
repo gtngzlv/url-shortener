@@ -3,13 +3,11 @@ package filestorage
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/google/uuid"
+	"github.com/gtngzlv/url-shortener/internal/pkg"
 	"go.uber.org/zap"
 	"os"
 	"path/filepath"
-
-	"github.com/google/uuid"
-
-	"github.com/gtngzlv/url-shortener/internal/pkg"
 )
 
 type Event struct {
@@ -31,10 +29,6 @@ func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
 }
 
 func (f *FileStorage) Save(fullURL string) (string, error) {
-	//if shortURL := f.getShortURLFromStorage(fullURL); shortURL != "" {
-	//	return shortURL, nil
-	//}
-
 	if _, err := os.Stat(filepath.Dir(f.path)); os.IsNotExist(err) {
 		f.log.Infof("Creating folder")
 		err = os.Mkdir(filepath.Dir(f.path), 0755)
@@ -72,11 +66,14 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 		f.log.Infof("FileStorage Save: error while write is %s", err)
 		return "", nil
 	}
-	WriteToCache(fullURL, event.ShortURL)
+	Cache[event.ShortURL] = fullURL
 	return event.ShortURL, nil
 }
 
 func (f *FileStorage) Get(shortURL string) (string, error) {
+	if Cache[shortURL] != "" {
+		return Cache[shortURL], nil
+	}
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		f.log.Errorf("FileStorage Get: failed to get from file")
@@ -92,60 +89,24 @@ func (f *FileStorage) Get(shortURL string) (string, error) {
 		f.log.Infof("FileStorage Get: error while OpenFile is %s", err)
 		return "", nil
 	}
-	r := bufio.NewReader(file)
-	s, e := readLine(r)
-	var item Event
-	for e == nil {
-		err = json.Unmarshal([]byte(s), &item)
-		if err != nil {
-			return "", nil
-		}
+	return readFromFile(file, shortURL)
+}
 
+var Cache = make(map[string]string)
+
+func readFromFile(file *os.File, shortURL string) (string, error) {
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		text := scanner.Text()
+		var item Event
+		err := json.Unmarshal([]byte(text), &item)
+		if err != nil {
+			return "", err
+		}
 		if item.ShortURL == shortURL {
 			return item.OriginalURL, nil
 		}
-		s, e = readLine(r)
+		Cache[shortURL] = item.OriginalURL
 	}
 	return "", nil
-}
-
-func (f *FileStorage) getShortURLFromStorage(fullURL string) string {
-	file, err := os.OpenFile(f.path, os.O_RDONLY|os.O_CREATE, 0666)
-	if err != nil {
-		f.log.Errorf("getShortURLFromStorage: failed to get from file")
-	}
-	defer file.Close()
-
-	if err != nil {
-		return ""
-	}
-
-	r := bufio.NewReader(file)
-	s, e := readLine(r)
-	var item Event
-	for e == nil {
-		err = json.Unmarshal([]byte(s), &item)
-		if err != nil {
-			return ""
-		}
-
-		if item.OriginalURL == fullURL {
-			return item.ShortURL
-		}
-		s, e = readLine(r)
-	}
-	return ""
-}
-
-func readLine(r *bufio.Reader) (string, error) {
-	var (
-		isPrefix       = true
-		err      error = nil
-		line, ln []byte
-	)
-	for isPrefix && err == nil {
-		line, isPrefix, err = r.ReadLine()
-		ln = append(ln, line...)
-	}
-	return string(ln), err
 }
