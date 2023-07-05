@@ -10,7 +10,6 @@ import (
 )
 
 func Run() error {
-
 	log := logger.NewLogger()
 	cfg := config.LoadConfig()
 	storage := storage.Init(cfg, log)

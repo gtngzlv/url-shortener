@@ -6,8 +6,6 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-
-	"github.com/gtngzlv/url-shortener/internal/storage/filestorage"
 )
 
 func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
@@ -73,7 +71,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	val := chi.URLParam(r, "shortID")
-	longURL := filestorage.GetFromCache(val)
+	longURL, _ := a.storage.Get(val)
 	w.Header().Set("content-type", "text/plain")
 	w.Header().Set("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
