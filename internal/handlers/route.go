@@ -3,6 +3,7 @@ package handlers
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/gtngzlv/url-shortener/internal/storage"
 	"go.uber.org/zap"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
@@ -12,15 +13,17 @@ import (
 
 type App struct {
 	*chi.Mux
-	cfg *config.AppConfig
-	log zap.SugaredLogger
+	cfg     *config.AppConfig
+	log     zap.SugaredLogger
+	storage storage.MyStorage
 }
 
-func NewApp(cfg *config.AppConfig, log zap.SugaredLogger) *App {
+func NewApp(cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *App {
 	app := &App{
 		chi.NewRouter(),
 		cfg,
 		log,
+		s,
 	}
 	app.reg()
 	return app

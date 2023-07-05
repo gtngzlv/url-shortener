@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/gtngzlv/url-shortener/internal/storage"
 	"github.com/gtngzlv/url-shortener/internal/storage/filestorage"
 )
 
@@ -31,7 +30,7 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorted, _ := storage.SaveURL(request.URL)
+	shorted, _ := a.storage.Save(request.URL)
 	response.Result = a.cfg.ResultURL + "/" + shorted
 	res, err := json.Marshal(response)
 	if err != nil {
@@ -58,7 +57,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorted, err := storage.SaveURL(string(body))
+	shorted, err := a.storage.Get(string(body))
 	if err != nil {
 		a.log.Errorf("Failed to save URL in storage")
 		return

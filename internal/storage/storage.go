@@ -15,12 +15,13 @@ type storage struct {
 	defaultStorage MyStorage
 }
 
-func Init(cfg *config.AppConfig, log zap.SugaredLogger) {
+func Init(cfg *config.AppConfig, log zap.SugaredLogger) MyStorage {
 	var s storage
 	s.defaultStorage = filestorage.Init(log, cfg.FileStoragePath)
+	return &s
 }
 
-func (s *storage) SaveURL(full string) (string, error) {
+func (s *storage) Save(full string) (string, error) {
 	short, err := s.defaultStorage.Save(full)
 	if err != nil {
 		return "", err
@@ -28,7 +29,7 @@ func (s *storage) SaveURL(full string) (string, error) {
 	return short, nil
 }
 
-func (s *storage) GetFullURL(short string) (string, error) {
+func (s *storage) Get(short string) (string, error) {
 	full, err := s.defaultStorage.Get(short)
 	if err != nil {
 		return "", err

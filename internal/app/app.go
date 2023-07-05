@@ -13,7 +13,7 @@ func Run() error {
 
 	log := logger.NewLogger()
 	cfg := config.LoadConfig()
-	storage.Init(cfg, log)
-	app := handlers.NewApp(cfg, log)
+	storage := storage.Init(cfg, log)
+	app := handlers.NewApp(cfg, log, storage)
 	return http.ListenAndServe(cfg.Host, app)
 }
