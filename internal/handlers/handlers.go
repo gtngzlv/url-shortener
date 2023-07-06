@@ -76,7 +76,10 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	val := chi.URLParam(r, "shortID")
-	longURL, _ := a.storage.Get(val)
+	longURL, err := a.storage.Get(val)
+	if err != nil {
+		a.log.Errorf("Error while GetURL: %s", err)
+	}
 	w.Header().Set("content-type", "text/plain")
 	w.Header().Set("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)

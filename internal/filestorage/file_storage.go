@@ -3,11 +3,13 @@ package filestorage
 import (
 	"bufio"
 	"encoding/json"
-	"github.com/google/uuid"
-	"github.com/gtngzlv/url-shortener/internal/pkg"
-	"go.uber.org/zap"
 	"os"
 	"path/filepath"
+
+	"github.com/google/uuid"
+	"go.uber.org/zap"
+
+	"github.com/gtngzlv/url-shortener/internal/util"
 )
 
 type Event struct {
@@ -38,21 +40,21 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 	}
 
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
+	if err != nil {
+		f.log.Infof("FileStorage Save: error while OpenFile is %s\n", err)
+		return "", err
+	}
 	defer func(file *os.File) {
 		err = file.Close()
 		if err != nil {
 			f.log.Errorf("Save FileStorage: failed to close file, err: %s", err)
 		}
 	}(file)
-
 	f.log.Info("Created file by path", f.path)
-	if err != nil {
-		f.log.Infof("FileStorage Save: error while OpenFile is %s\n", err)
-		return "", err
-	}
+
 	event := Event{
 		UUID:        uuid.NewString(),
-		ShortURL:    pkg.RandStringRunes(),
+		ShortURL:    util.RandStringRunes(),
 		OriginalURL: fullURL,
 	}
 	data, err := json.Marshal(event)
