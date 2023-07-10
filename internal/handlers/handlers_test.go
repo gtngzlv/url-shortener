@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/go-chi/chi/v5"
-	"github.com/gtngzlv/url-shortener/internal/filestorage"
+	"github.com/gtngzlv/url-shortener/internal/storage/database"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,7 +11,6 @@ import (
 
 	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/logger"
-	"github.com/gtngzlv/url-shortener/internal/storage"
 )
 
 func TestGetHandler(t *testing.T) {
@@ -33,8 +32,7 @@ func TestGetHandler(t *testing.T) {
 			cfg := config.LoadConfig()
 			cfg.FileStoragePath = "/tmp/short-url-bd.json"
 
-			fileStorage := filestorage.Init(log, cfg.FileStoragePath)
-			s := storage.Init(fileStorage)
+			s := database.Init(log, cfg)
 			handler := NewApp(router, cfg, log, s)
 
 			request := httptest.NewRequest(http.MethodGet, "/", nil)

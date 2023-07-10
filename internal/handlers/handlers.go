@@ -6,12 +6,14 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+
+	"github.com/gtngzlv/url-shortener/internal/models"
 )
 
 func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	var (
-		request  APIShortenRequest
-		response APIShortenResponse
+		request  models.APIShortenRequest
+		response models.APIShortenResponse
 		err      error
 	)
 
@@ -83,4 +85,45 @@ func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("content-type", "text/plain")
 	w.Header().Set("Location", longURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
+}
+
+func (a *App) Ping(w http.ResponseWriter, r *http.Request) {
+	if err := a.storage.Ping(); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func (a *App) Batch(w http.ResponseWriter, r *http.Request) {
+	var batches []models.BatchEntity
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		a.log.Error("Batch: failed to read from body")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	err = json.Unmarshal(body, &batches)
+	if err != nil {
+		a.log.Error("Batch: failed to unmarshal request")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	result, err := a.storage.Batch(batches)
+	if err != nil {
+		a.log.Error("Batch: failed to save to database")
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	response, err := json.Marshal(result)
+	if err != nil {
+		a.log.Error("Batch: failed to marshal response")
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
+	w.Write(response)
+
 }
