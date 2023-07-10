@@ -44,4 +44,5 @@ func (a *App) reg() {
 
 	a.Router.Get("/{shortID}", a.GetURL)
 	a.Router.Post("/", a.PostURL)
+	a.Router.Get("/ping", a.Ping)
 }

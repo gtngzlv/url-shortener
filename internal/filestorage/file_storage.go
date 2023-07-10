@@ -94,6 +94,10 @@ func (f *FileStorage) Get(shortURL string) (string, error) {
 	return readFromFile(file, shortURL)
 }
 
+func (f *FileStorage) Ping() error {
+	return nil
+}
+
 var Cache = make(map[string]string)
 
 func readFromFile(file *os.File, shortURL string) (string, error) {
