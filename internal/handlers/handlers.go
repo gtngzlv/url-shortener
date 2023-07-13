@@ -79,6 +79,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	val := chi.URLParam(r, "shortID")
 	longURL, err := a.storage.Get(val)
+	a.log.Infof("Found %s url by short %s", longURL, val)
 	if err != nil {
 		a.log.Errorf("Error while GetURL: %s", err)
 	}
@@ -105,6 +106,7 @@ func (a *App) Batch(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = json.Unmarshal(body, &batches)
+	a.log.Info("Batch request body", batches)
 	if err != nil {
 		a.log.Error("Batch: failed to unmarshal request")
 		w.WriteHeader(http.StatusBadRequest)
@@ -117,6 +119,7 @@ func (a *App) Batch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := json.Marshal(result)
+	a.log.Info("Batch response", response)
 	if err != nil {
 		a.log.Error("Batch: failed to marshal response")
 		return
