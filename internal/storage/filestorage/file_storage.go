@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"go.uber.org/zap"
 
+	"github.com/gtngzlv/url-shortener/internal/models"
 	"github.com/gtngzlv/url-shortener/internal/util"
 )
 
@@ -21,6 +22,11 @@ type Event struct {
 type FileStorage struct {
 	path string
 	log  zap.SugaredLogger
+}
+
+func (f *FileStorage) Batch(entities []models.BatchEntity) ([]models.BatchEntity, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
@@ -68,14 +74,10 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 		f.log.Infof("FileStorage Save: error while write is %s", err)
 		return "", nil
 	}
-	Cache[event.ShortURL] = fullURL
 	return event.ShortURL, nil
 }
 
 func (f *FileStorage) Get(shortURL string) (string, error) {
-	if Cache[shortURL] != "" {
-		return Cache[shortURL], nil
-	}
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		f.log.Errorf("FileStorage Get: failed to get from file")
@@ -94,7 +96,9 @@ func (f *FileStorage) Get(shortURL string) (string, error) {
 	return readFromFile(file, shortURL)
 }
 
-var Cache = make(map[string]string)
+func (f *FileStorage) Ping() error {
+	return nil
+}
 
 func readFromFile(file *os.File, shortURL string) (string, error) {
 	scanner := bufio.NewScanner(file)
@@ -108,7 +112,6 @@ func readFromFile(file *os.File, shortURL string) (string, error) {
 		if item.ShortURL == shortURL {
 			return item.OriginalURL, nil
 		}
-		Cache[shortURL] = item.OriginalURL
 	}
 	return "", nil
 }
