@@ -83,9 +83,8 @@ func Init(log zap.SugaredLogger, config *config.AppConfig) *PostgresDB {
 		log.Error("Unable to open db, err is", err)
 		return nil
 	}
-	_, err = db.Exec("create table IF NOT EXISTS " + tableName + " (id serial, short text not null, long text not null)")
-	if err != nil {
-		log.Error("unable to create table, err is", err)
+	if err = createTable(db, log); err != nil {
+		log.Error("unable to provide table, err is", err)
 		return nil
 	}
 	return &PostgresDB{
@@ -93,4 +92,18 @@ func Init(log zap.SugaredLogger, config *config.AppConfig) *PostgresDB {
 		db:  db,
 		cfg: config,
 	}
+}
+
+func createTable(db *sqlx.DB, log zap.SugaredLogger) error {
+	_, err := db.Exec("create table IF NOT EXISTS " + tableName + " (id serial, short text not null, long text not null)")
+	if err != nil {
+		log.Error("unable to create table, err is", err)
+		return err
+	}
+	_, err = db.Exec("create index long on " + tableName + "(long)")
+	if err != nil {
+		log.Error("unable to create index, err is", err)
+		return err
+	}
+	return nil
 }
