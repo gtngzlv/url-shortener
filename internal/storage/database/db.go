@@ -95,7 +95,7 @@ func Init(log zap.SugaredLogger, config *config.AppConfig) *PostgresDB {
 }
 
 func createTable(db *sqlx.DB, log zap.SugaredLogger) error {
-	_, err := db.Exec("create table IF NOT EXISTS " + tableName + " (id serial, short text not null, long text not null)")
+	_, err := db.Exec("create table IF NOT EXISTS " + tableName + " (id serial primary key, short text not null, long text not null)")
 	if err != nil {
 		log.Error("unable to create table, err is", err)
 		return err
