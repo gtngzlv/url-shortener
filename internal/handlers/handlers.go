@@ -119,7 +119,7 @@ func (a *App) Batch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	response, err := json.Marshal(result)
-	a.log.Info("Batch response", response)
+	a.log.Info("Batch response", string(response))
 	if err != nil {
 		a.log.Error("Batch: failed to marshal response")
 		return
