@@ -100,7 +100,7 @@ func createTable(db *sqlx.DB, log zap.SugaredLogger) error {
 		log.Error("unable to create table, err is", err)
 		return err
 	}
-	_, err = db.Exec("create index longindex on " + tableName + "(long)")
+	_, err = db.Exec("create index long_id on " + tableName + "(long)")
 	if err != nil {
 		log.Error("unable to create index, err is", err)
 		return err
