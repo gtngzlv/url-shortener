@@ -19,7 +19,7 @@ type PostgresDB struct {
 	cfg *config.AppConfig
 }
 
-var tableName = "url_storager"
+var tableName = "url_storager2"
 
 func (p PostgresDB) Batch(entities []models.BatchEntity) ([]models.BatchEntity, error) {
 	var resultEntities []models.BatchEntity
@@ -96,11 +96,12 @@ func Init(log zap.SugaredLogger, config *config.AppConfig) *PostgresDB {
 
 func createTable(db *sqlx.DB, log zap.SugaredLogger) error {
 	_, err := db.Exec("create table IF NOT EXISTS " + tableName + " (id serial primary key, short text not null, long text not null)")
+	log.Info("create table IF NOT EXISTS " + tableName + " (id serial primary key, short text not null, long text not null)")
 	if err != nil {
 		log.Error("unable to create table, err is", err)
 		return err
 	}
-	_, err = db.Exec("create index long_id on " + tableName + "(long)")
+	_, err = db.Exec("create index if not exists long_id on " + tableName + "(long)")
 	if err != nil {
 		log.Error("unable to create index, err is", err)
 		return err
