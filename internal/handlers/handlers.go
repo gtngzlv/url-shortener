@@ -31,7 +31,7 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorted, err := a.storage.Save(request.URL)
+	shorted, err := a.storage.SaveFull(request.URL)
 	if err != nil {
 		if err == errors.ErrAlreadyExist {
 			w.Header().Add("Content-Type", "application/json")
@@ -46,6 +46,7 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 			w.Write(res)
 			return
 		}
+		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	response.Result = a.cfg.ResultURL + "/" + shorted
@@ -75,7 +76,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shorted, err := a.storage.Save(string(body))
+	shorted, err := a.storage.SaveFull(string(body))
 	if err != nil {
 		if err == errors.ErrAlreadyExist {
 			w.Header().Add("Content-Type", "text/plain")
@@ -100,7 +101,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	val := chi.URLParam(r, "shortID")
-	longURL, err := a.storage.Get(val)
+	longURL, err := a.storage.GetByShort(val)
 	a.log.Infof("Found %s url by short %s", longURL, val)
 	if err != nil {
 		a.log.Errorf("Error while GetURL: %s", err)

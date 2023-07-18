@@ -43,7 +43,7 @@ func TestGetHandler(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/", nil)
 			request.URL.Path = tt.query
 			w := httptest.NewRecorder()
-			dbMock.EXPECT().Get("").Return("ya.ru", nil)
+			dbMock.EXPECT().GetByShort("").Return("ya.ru", nil)
 			handler.GetURL(w, request)
 			res := w.Result()
 			defer res.Body.Close()

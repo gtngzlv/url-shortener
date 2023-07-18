@@ -49,19 +49,19 @@ func (mr *MockMyStorageMockRecorder) Batch(entities interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Batch", reflect.TypeOf((*MockMyStorage)(nil).Batch), entities)
 }
 
-// Get mocks base method.
-func (m *MockMyStorage) Get(shortURL string) (string, error) {
+// GetByShort mocks base method.
+func (m *MockMyStorage) GetByShort(shortURL string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Get", shortURL)
+	ret := m.ctrl.Call(m, "GetByShort", shortURL)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Get indicates an expected call of Get.
-func (mr *MockMyStorageMockRecorder) Get(shortURL interface{}) *gomock.Call {
+// GetByShort indicates an expected call of GetByShort.
+func (mr *MockMyStorageMockRecorder) GetByShort(shortURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockMyStorage)(nil).Get), shortURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByShort", reflect.TypeOf((*MockMyStorage)(nil).GetByShort), shortURL)
 }
 
 // Ping mocks base method.
@@ -78,17 +78,17 @@ func (mr *MockMyStorageMockRecorder) Ping() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ping", reflect.TypeOf((*MockMyStorage)(nil).Ping))
 }
 
-// Save mocks base method.
-func (m *MockMyStorage) Save(fullURL string) (string, error) {
+// SaveFull mocks base method.
+func (m *MockMyStorage) SaveFull(fullURL string) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Save", fullURL)
+	ret := m.ctrl.Call(m, "SaveFull", fullURL)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// Save indicates an expected call of Save.
-func (mr *MockMyStorageMockRecorder) Save(fullURL interface{}) *gomock.Call {
+// SaveFull indicates an expected call of SaveFull.
+func (mr *MockMyStorageMockRecorder) SaveFull(fullURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Save", reflect.TypeOf((*MockMyStorage)(nil).Save), fullURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFull", reflect.TypeOf((*MockMyStorage)(nil).SaveFull), fullURL)
 }

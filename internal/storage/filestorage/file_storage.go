@@ -36,7 +36,7 @@ func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
 	}
 }
 
-func (f *FileStorage) Save(fullURL string) (string, error) {
+func (f *FileStorage) SaveFull(fullURL string) (string, error) {
 	if _, err := os.Stat(filepath.Dir(f.path)); os.IsNotExist(err) {
 		f.log.Infof("Creating folder")
 		err = os.Mkdir(filepath.Dir(f.path), 0755)
@@ -77,7 +77,7 @@ func (f *FileStorage) Save(fullURL string) (string, error) {
 	return event.ShortURL, nil
 }
 
-func (f *FileStorage) Get(shortURL string) (string, error) {
+func (f *FileStorage) GetByShort(shortURL string) (string, error) {
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		f.log.Errorf("FileStorage Get: failed to get from file")

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"github.com/gtngzlv/url-shortener/internal/core"
 	"go.uber.org/zap"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
@@ -11,8 +12,8 @@ import (
 )
 
 type MyStorage interface {
-	Save(fullURL string) (string, error)
-	Get(shortURL string) (string, error)
+	SaveFull(fullURL string) (string, error)
+	GetByShort(shortURL string) (string, error)
 	Batch(entities []models.BatchEntity) ([]models.BatchEntity, error)
 	Ping() error
 }
@@ -30,15 +31,19 @@ func (s *storage) Batch(entities []models.BatchEntity) ([]models.BatchEntity, er
 func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
 	var s storage
 	if cfg.DatabaseDSN != "" {
-		s.defaultStorage = database.Init(log, cfg)
+		db, resultURL := core.InitDB(cfg.DatabaseDSN, cfg.ResultURL)
+		if db == nil {
+			log.Error("Failed to init DB")
+		}
+		s.defaultStorage = database.Init(log, db, resultURL)
 	} else if cfg.FileStoragePath != "" {
 		s.defaultStorage = filestorage.Init(log, cfg.FileStoragePath)
 	}
 	return &s
 }
 
-func (s *storage) Save(full string) (string, error) {
-	short, err := s.defaultStorage.Save(full)
+func (s *storage) SaveFull(full string) (string, error) {
+	short, err := s.defaultStorage.SaveFull(full)
 
 	switch {
 	case err == errors.ErrAlreadyExist:
@@ -57,11 +62,11 @@ func (s *storage) Save(full string) (string, error) {
 	}
 }
 
-func (s *storage) Get(short string) (string, error) {
+func (s *storage) GetByShort(short string) (string, error) {
 	if getFromStorage(short) != "" {
 		return getFromStorage(short), nil
 	}
-	full, err := s.defaultStorage.Get(short)
+	full, err := s.defaultStorage.GetByShort(short)
 	if err != nil {
 		return "", err
 	}

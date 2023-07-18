@@ -10,16 +10,15 @@ import (
 	"github.com/pressly/goose"
 	"go.uber.org/zap"
 
-	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/errors"
 	"github.com/gtngzlv/url-shortener/internal/models"
 	"github.com/gtngzlv/url-shortener/internal/util"
 )
 
 type PostgresDB struct {
-	log zap.SugaredLogger
-	db  *sql.DB
-	cfg *config.AppConfig
+	log       zap.SugaredLogger
+	db        *sql.DB
+	resultURL string
 }
 
 var tableName = "url_storage"
@@ -30,6 +29,7 @@ func (p PostgresDB) Batch(entities []models.BatchEntity) ([]models.BatchEntity, 
 	defer cancel()
 	tx, err := p.db.Begin()
 	if err != nil {
+		tx.Rollback()
 		p.log.Error("Error while begin tx")
 		return resultEntities, err
 	}
@@ -43,13 +43,13 @@ func (p PostgresDB) Batch(entities []models.BatchEntity) ([]models.BatchEntity, 
 		}
 		resultEntities = append(resultEntities, models.BatchEntity{
 			CorrelationID: v.CorrelationID,
-			ShortURL:      p.cfg.ResultURL + "/" + short,
+			ShortURL:      p.resultURL + "/" + short,
 		})
 	}
 	return resultEntities, tx.Commit()
 }
 
-func (p PostgresDB) Save(fullURL string) (string, error) {
+func (p PostgresDB) SaveFull(fullURL string) (string, error) {
 	var (
 		short string
 		err   error
@@ -73,7 +73,7 @@ func (p PostgresDB) Save(fullURL string) (string, error) {
 	return short, nil
 }
 
-func (p PostgresDB) Get(shortURL string) (string, error) {
+func (p PostgresDB) GetByShort(shortURL string) (string, error) {
 	var long string
 	query := "select long from " + tableName + " where short=$1"
 	row := p.db.QueryRow(query, shortURL)
@@ -101,24 +101,18 @@ func (p PostgresDB) Ping() error {
 	return nil
 }
 
-func Init(log zap.SugaredLogger, config *config.AppConfig) *PostgresDB {
-	db, err := sql.Open("postgres", config.DatabaseDSN)
-	if err != nil {
-		log.Error("Unable to open db, err is", err)
-		return nil
-	}
-
-	if err = goose.SetDialect("postgres"); err != nil {
+func Init(log zap.SugaredLogger, db *sql.DB, resultURL string) *PostgresDB {
+	if err := goose.SetDialect("postgres"); err != nil {
 		log.Error("unable to set goose dialect", err)
 		return nil
 	}
-	if err = goose.Up(db, "migrations"); err != nil {
+	if err := goose.Up(db, "migrations"); err != nil {
 		log.Error("failed to load migrations ", err)
 		return nil
 	}
 	return &PostgresDB{
-		log: log,
-		db:  db,
-		cfg: config,
+		log:       log,
+		db:        db,
+		resultURL: resultURL,
 	}
 }

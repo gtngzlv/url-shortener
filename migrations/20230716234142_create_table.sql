@@ -5,6 +5,5 @@ CREATE UNIQUE INDEX long_id ON URL_STORAGE USING btree(long);
 
 -- +goose Down
 -- +goose StatementBegin
-TRUNCATE TABLE URL_STORAGE;
 DROP TABLE URL_STORAGE;
 -- +goose StatementEnd
