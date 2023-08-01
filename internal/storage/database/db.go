@@ -23,7 +23,7 @@ type PostgresDB struct {
 
 var tableName = "url_storage"
 
-func (p PostgresDB) Batch(entities []models.BatchEntity) ([]models.BatchEntity, error) {
+func (p PostgresDB) Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error) {
 	var resultEntities []models.BatchEntity
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
@@ -35,7 +35,7 @@ func (p PostgresDB) Batch(entities []models.BatchEntity) ([]models.BatchEntity, 
 	}
 	for _, v := range entities {
 		short := util.RandStringRunes()
-		_, err = tx.ExecContext(ctx, "INSERT INTO "+tableName+"(short, long) values ($1, $2)", short, v.OriginalURL)
+		_, err = tx.ExecContext(ctx, "INSERT INTO "+tableName+"(short, long, userID) values ($1, $2, $3)", short, v.OriginalURL, userID)
 		if err != nil {
 			p.log.Error("Error while ExecContext", err)
 			tx.Rollback()
@@ -49,14 +49,42 @@ func (p PostgresDB) Batch(entities []models.BatchEntity) ([]models.BatchEntity, 
 	return resultEntities, tx.Commit()
 }
 
-func (p PostgresDB) SaveFull(fullURL string) (string, error) {
+func (p PostgresDB) GetBatchByUserID(userID string) ([]models.BatchEntity, error) {
+	var (
+		entity models.BatchEntity
+		result []models.BatchEntity
+	)
+	query := "select short, long from " + tableName + " where userID=$1"
+	rows, err := p.db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	if rows.Err() != nil {
+		return nil, rows.Err()
+	}
+
+	for rows.Next() {
+		err = rows.Scan(&entity.ShortURL, &entity.OriginalURL)
+		if err != nil {
+			break
+		}
+		entity.ShortURL = p.resultURL + "/" + entity.ShortURL
+		result = append(result, entity)
+	}
+	if len(result) == 0 {
+		return nil, errors.ErrNoBatchByUserID
+	}
+	return result, nil
+}
+
+func (p PostgresDB) SaveFull(userID string, fullURL string) (string, error) {
 	var (
 		short string
 		err   error
 	)
 	short = util.RandStringRunes()
-	query := "INSERT INTO " + tableName + "(short, long) VALUES ($1, $2)"
-	_, err = p.db.Exec(query, short, fullURL)
+	query := "INSERT INTO " + tableName + "(short, long, userID) VALUES ($1, $2, $3)"
+	_, err = p.db.Exec(query, short, fullURL, userID)
 	if err != nil {
 		p.log.Info("DB Save err ", err)
 		if pgerrcode.IsIntegrityConstraintViolation(string(err.(*pq.Error).Code)) {

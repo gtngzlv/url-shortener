@@ -12,9 +12,10 @@ import (
 )
 
 type MyStorage interface {
-	SaveFull(fullURL string) (string, error)
+	SaveFull(userID string, fullURL string) (string, error)
 	GetByShort(shortURL string) (string, error)
-	Batch(entities []models.BatchEntity) ([]models.BatchEntity, error)
+	GetBatchByUserID(userID string) ([]models.BatchEntity, error)
+	Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error)
 	Ping() error
 }
 
@@ -22,10 +23,6 @@ var Cache = make(map[string]string)
 
 type storage struct {
 	defaultStorage MyStorage
-}
-
-func (s *storage) Batch(entities []models.BatchEntity) ([]models.BatchEntity, error) {
-	return s.defaultStorage.Batch(entities)
 }
 
 func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
@@ -42,8 +39,16 @@ func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
 	return &s
 }
 
-func (s *storage) SaveFull(full string) (string, error) {
-	short, err := s.defaultStorage.SaveFull(full)
+func (s *storage) Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error) {
+	return s.defaultStorage.Batch(userID, entities)
+}
+
+func (s *storage) GetBatchByUserID(userID string) ([]models.BatchEntity, error) {
+	return s.defaultStorage.GetBatchByUserID(userID)
+}
+
+func (s *storage) SaveFull(userID string, full string) (string, error) {
+	short, err := s.defaultStorage.SaveFull(userID, full)
 
 	switch {
 	case err == errors.ErrAlreadyExist:

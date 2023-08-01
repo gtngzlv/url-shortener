@@ -9,7 +9,8 @@ type APIShortenResponse struct {
 }
 
 type BatchEntity struct {
-	CorrelationID string `json:"correlation_id"`
+	UserID        string `json:"userID,omitempty"`
+	CorrelationID string `json:"correlation_id,omitempty"`
 	OriginalURL   string `json:"original_url,omitempty"`
 	ShortURL      string `json:"short_url,omitempty"`
 }
