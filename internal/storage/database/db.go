@@ -23,9 +23,9 @@ type PostgresDB struct {
 
 var tableName = "url_storage"
 
-func (p PostgresDB) Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error) {
-	var resultEntities []models.BatchEntity
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+func (p PostgresDB) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
+	var resultEntities []models.URLInfo
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*70)
 	defer cancel()
 	tx, err := p.db.Begin()
 	if err != nil {
@@ -41,7 +41,7 @@ func (p PostgresDB) Batch(userID string, entities []models.BatchEntity) ([]model
 			tx.Rollback()
 			return resultEntities, nil
 		}
-		resultEntities = append(resultEntities, models.BatchEntity{
+		resultEntities = append(resultEntities, models.URLInfo{
 			CorrelationID: v.CorrelationID,
 			ShortURL:      p.resultURL + "/" + short,
 		})
@@ -49,10 +49,10 @@ func (p PostgresDB) Batch(userID string, entities []models.BatchEntity) ([]model
 	return resultEntities, tx.Commit()
 }
 
-func (p PostgresDB) GetBatchByUserID(userID string) ([]models.BatchEntity, error) {
+func (p PostgresDB) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
 	var (
-		entity models.BatchEntity
-		result []models.BatchEntity
+		entity models.URLInfo
+		result []models.URLInfo
 	)
 	query := "select short, long from " + tableName + " where userID=$1"
 	rows, err := p.db.Query(query, userID)
@@ -77,49 +77,70 @@ func (p PostgresDB) GetBatchByUserID(userID string) ([]models.BatchEntity, error
 	return result, nil
 }
 
-func (p PostgresDB) SaveFull(userID string, fullURL string) (string, error) {
+func (p PostgresDB) SaveFull(userID string, fullURL string) (models.URLInfo, error) {
 	var (
-		short string
-		err   error
+		urlInfo models.URLInfo
+		err     error
 	)
-	short = util.RandStringRunes()
+	generatedShort := util.RandStringRunes()
 	query := "INSERT INTO " + tableName + "(short, long, userID) VALUES ($1, $2, $3)"
-	_, err = p.db.Exec(query, short, fullURL, userID)
+	_, err = p.db.Exec(query, generatedShort, fullURL, userID)
 	if err != nil {
 		p.log.Info("DB Save err ", err)
 		if pgerrcode.IsIntegrityConstraintViolation(string(err.(*pq.Error).Code)) {
-			short, err = p.GetShortURL(fullURL)
+			urlInfo, err = p.GetShortURL(fullURL)
 			if err != nil {
 				p.log.Error("failed to get already saved short url")
-				return "", nil
+				return models.URLInfo{
+					ShortURL: "",
+				}, nil
 			}
-			return short, errors.ErrAlreadyExist
+			return urlInfo, errors.ErrAlreadyExist
 		}
 		p.log.Error("Failed to save short link into DB")
-		return "", nil
+		return models.URLInfo{
+			ShortURL: "",
+		}, nil
 	}
-	return short, nil
+	urlInfo.ShortURL = generatedShort
+	return urlInfo, nil
 }
 
-func (p PostgresDB) GetByShort(shortURL string) (string, error) {
-	var long string
-	query := "select long from " + tableName + " where short=$1"
+func (p PostgresDB) GetByShort(shortURL string) (models.URLInfo, error) {
+	p.log.Infof("GetByShort: received url %s", shortURL)
+	var urlEntity models.URLInfo
+	query := "select userID, long, is_deleted from " + tableName + " where short=$1"
 	row := p.db.QueryRow(query, shortURL)
-	if err := row.Scan(&long); err != nil {
+	if err := row.Scan(&urlEntity.UserID, &urlEntity.OriginalURL, &urlEntity.IsDeleted); err != nil {
 		p.log.Error("Failed to get link from db")
-		return "", nil
+		return urlEntity, err
 	}
-	return long, nil
+	p.log.Infof("GetByShort found url info: %v", urlEntity)
+	return urlEntity, nil
 }
 
-func (p PostgresDB) GetShortURL(fullURL string) (string, error) {
-	var short string
+func (p PostgresDB) DeleteByUserIDAndShort(userID string, short string) (bool, error) {
+	query := "UPDATE " + tableName + " SET is_deleted=1::bit WHERE userID=$1 and short=$2"
+	rows, err := p.db.Exec(query, userID, short)
+	if err != nil {
+		return false, err
+	}
+	if r, err := rows.RowsAffected(); err != nil || r != int64(1) {
+		p.log.Infof("0 rows affected in delete")
+		return false, err
+	}
+	p.log.Infof("Marked as deleted link %s", short)
+	return true, nil
+}
+
+func (p PostgresDB) GetShortURL(fullURL string) (models.URLInfo, error) {
+	var urlInfo models.URLInfo
 	query := "select short from " + tableName + " where long=$1"
 	row := p.db.QueryRow(query, fullURL)
-	if err := row.Scan(&short); err != nil {
-		return "", err
+	if err := row.Scan(&urlInfo.ShortURL); err != nil {
+		return urlInfo, err
 	}
-	return short, nil
+	return urlInfo, nil
 }
 
 func (p PostgresDB) Ping() error {

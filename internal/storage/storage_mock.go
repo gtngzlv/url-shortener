@@ -35,10 +35,10 @@ func (m *MockMyStorage) EXPECT() *MockMyStorageMockRecorder {
 }
 
 // Batch mocks base method.
-func (m *MockMyStorage) Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error) {
+func (m *MockMyStorage) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Batch", userID, entities)
-	ret0, _ := ret[0].([]models.BatchEntity)
+	ret0, _ := ret[0].([]models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -49,11 +49,26 @@ func (mr *MockMyStorageMockRecorder) Batch(userID, entities interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Batch", reflect.TypeOf((*MockMyStorage)(nil).Batch), userID, entities)
 }
 
+// DeleteByUserIDAndShort mocks base method.
+func (m *MockMyStorage) DeleteByUserIDAndShort(userID, shortURLs string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteByUserIDAndShort", userID, shortURLs)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteByUserIDAndShort indicates an expected call of DeleteByUserIDAndShort.
+func (mr *MockMyStorageMockRecorder) DeleteByUserIDAndShort(userID, shortURLs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByUserIDAndShort", reflect.TypeOf((*MockMyStorage)(nil).DeleteByUserIDAndShort), userID, shortURLs)
+}
+
 // GetBatchByUserID mocks base method.
-func (m *MockMyStorage) GetBatchByUserID(userID string) ([]models.BatchEntity, error) {
+func (m *MockMyStorage) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBatchByUserID", userID)
-	ret0, _ := ret[0].([]models.BatchEntity)
+	ret0, _ := ret[0].([]models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,10 +80,10 @@ func (mr *MockMyStorageMockRecorder) GetBatchByUserID(userID interface{}) *gomoc
 }
 
 // GetByShort mocks base method.
-func (m *MockMyStorage) GetByShort(shortURL string) (string, error) {
+func (m *MockMyStorage) GetByShort(shortURL string) (models.URLInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByShort", shortURL)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -94,10 +109,10 @@ func (mr *MockMyStorageMockRecorder) Ping() *gomock.Call {
 }
 
 // SaveFull mocks base method.
-func (m *MockMyStorage) SaveFull(userID, fullURL string) (string, error) {
+func (m *MockMyStorage) SaveFull(userID, fullURL string) (models.URLInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SaveFull", userID, fullURL)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

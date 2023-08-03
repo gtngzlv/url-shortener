@@ -14,7 +14,7 @@ func (a *App) Batch(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	var batches []models.BatchEntity
+	var batches []models.URLInfo
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		a.log.Error("Batch: failed to read from body")

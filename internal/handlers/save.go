@@ -35,12 +35,12 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	shorted, err := a.storage.SaveFull(userID, request.URL)
+	url, err := a.storage.SaveFull(userID, request.URL)
 	if err != nil {
 		if err == errors.ErrAlreadyExist {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusConflict)
-			response.Result = a.cfg.ResultURL + "/" + shorted
+			response.Result = a.cfg.ResultURL + "/" + url.ShortURL
 			res, err := json.Marshal(response)
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
@@ -53,7 +53,7 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	response.Result = a.cfg.ResultURL + "/" + shorted
+	response.Result = a.cfg.ResultURL + "/" + url.ShortURL
 	res, err := json.Marshal(response)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -85,12 +85,12 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	shorted, err := a.storage.SaveFull(userID, string(body))
+	url, err := a.storage.SaveFull(userID, string(body))
 	if err != nil {
 		if err == errors.ErrAlreadyExist {
 			w.Header().Add("Content-Type", "text/plain")
 			w.WriteHeader(http.StatusConflict)
-			_, err = w.Write([]byte(a.cfg.ResultURL + "/" + shorted))
+			_, err = w.Write([]byte(a.cfg.ResultURL + "/" + url.ShortURL))
 			if err != nil {
 				a.log.Errorf("PostURL: Failed to write in body")
 			}
@@ -102,7 +102,7 @@ func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
 
-	_, err = w.Write([]byte(a.cfg.ResultURL + "/" + shorted))
+	_, err = w.Write([]byte(a.cfg.ResultURL + "/" + url.ShortURL))
 	if err != nil {
 		a.log.Errorf("PostURL: Failed to write in body")
 	}

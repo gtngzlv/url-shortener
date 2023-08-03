@@ -8,17 +8,19 @@ type APIShortenResponse struct {
 	Result string `json:"result"`
 }
 
-type BatchEntity struct {
+type URLInfo struct {
+	UUID          string `json:"uuid,omitempty"`
 	UserID        string `json:"userID,omitempty"`
 	CorrelationID string `json:"correlation_id,omitempty"`
 	OriginalURL   string `json:"original_url,omitempty"`
 	ShortURL      string `json:"short_url,omitempty"`
+	IsDeleted     int    `json:"is_deleted,omitempty"`
 }
 
 type BatchRequest struct {
-	Entities []BatchEntity
+	Entities []URLInfo
 }
 
 type BatchResponse struct {
-	Entities []BatchEntity
+	Entities []URLInfo
 }

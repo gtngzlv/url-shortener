@@ -48,4 +48,6 @@ func (a *App) reg() {
 
 	a.Router.Post("/", a.PostURL)
 	a.Router.Post("/api/shorten/batch", a.Batch)
+
+	a.Router.Delete("/api/user/urls", a.DeleteURLs)
 }

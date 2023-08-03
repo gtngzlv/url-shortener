@@ -10,13 +10,19 @@ import (
 
 func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	val := chi.URLParam(r, "shortID")
-	longURL, err := a.storage.GetByShort(val)
-	a.log.Infof("Found %s url by short %s", longURL, val)
+	url, err := a.storage.GetByShort(val)
 	if err != nil {
-		a.log.Errorf("Error while GetURL: %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
+	a.log.Infof("Found %s url by short %s", url.OriginalURL, val)
+	if url.IsDeleted == 1 {
+		w.WriteHeader(http.StatusGone)
+		return
+	}
+
 	w.Header().Set("content-type", "text/plain")
-	w.Header().Set("Location", longURL)
+	w.Header().Set("Location", url.OriginalURL)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 

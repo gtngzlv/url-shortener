@@ -12,10 +12,11 @@ import (
 )
 
 type MyStorage interface {
-	SaveFull(userID string, fullURL string) (string, error)
-	GetByShort(shortURL string) (string, error)
-	GetBatchByUserID(userID string) ([]models.BatchEntity, error)
-	Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error)
+	SaveFull(userID string, fullURL string) (models.URLInfo, error)
+	GetByShort(shortURL string) (models.URLInfo, error)
+	GetBatchByUserID(userID string) ([]models.URLInfo, error)
+	Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error)
+	DeleteByUserIDAndShort(userID string, shortURL string) (bool, error)
 	Ping() error
 }
 
@@ -39,53 +40,47 @@ func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
 	return &s
 }
 
-func (s *storage) Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error) {
+func (s *storage) DeleteByUserIDAndShort(userID string, short string) (bool, error) {
+	return s.defaultStorage.DeleteByUserIDAndShort(userID, short)
+}
+
+func (s *storage) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
 	return s.defaultStorage.Batch(userID, entities)
 }
 
-func (s *storage) GetBatchByUserID(userID string) ([]models.BatchEntity, error) {
+func (s *storage) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
 	return s.defaultStorage.GetBatchByUserID(userID)
 }
 
-func (s *storage) SaveFull(userID string, full string) (string, error) {
-	short, err := s.defaultStorage.SaveFull(userID, full)
+func (s *storage) SaveFull(userID string, full string) (models.URLInfo, error) {
+	var urlInfo models.URLInfo
+	urlInfo, err := s.defaultStorage.SaveFull(userID, full)
 
 	switch {
 	case err == errors.ErrAlreadyExist:
 		{
-			return short, err
+			return urlInfo, err
 		}
 	case err != nil && err != errors.ErrAlreadyExist:
 		{
-			return "", err
+			return urlInfo, err
 		}
 	default:
 		{
-			saveToStorage(short, full)
-			return short, nil
+			return urlInfo, nil
 		}
 	}
 }
 
-func (s *storage) GetByShort(short string) (string, error) {
-	if getFromStorage(short) != "" {
-		return getFromStorage(short), nil
-	}
+func (s *storage) GetByShort(short string) (models.URLInfo, error) {
+	var urlInfo models.URLInfo
 	full, err := s.defaultStorage.GetByShort(short)
 	if err != nil {
-		return "", err
+		return urlInfo, err
 	}
 	return full, nil
 }
 
 func (s *storage) Ping() error {
 	return nil
-}
-
-func saveToStorage(short, full string) {
-	Cache[short] = full
-}
-
-func getFromStorage(short string) string {
-	return Cache[short]
 }

@@ -13,16 +13,14 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/util"
 )
 
-type Event struct {
-	UserID      string `json:"userID"`
-	UUID        string `json:"uuid"`
-	ShortURL    string `json:"short_url"`
-	OriginalURL string `json:"original_url"`
-}
-
 type FileStorage struct {
 	path string
 	log  zap.SugaredLogger
+}
+
+func (f *FileStorage) DeleteByUserIDAndShort(userID string, short string) (bool, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
@@ -32,7 +30,7 @@ func Init(log zap.SugaredLogger, fileStoragePath string) *FileStorage {
 	}
 }
 
-func (f *FileStorage) GetBatchByUserID(userID string) ([]models.BatchEntity, error) {
+func (f *FileStorage) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
 	file, err := os.OpenFile(f.path, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
@@ -50,12 +48,13 @@ func (f *FileStorage) GetBatchByUserID(userID string) ([]models.BatchEntity, err
 	return urls, nil
 }
 
-func (f *FileStorage) Batch(userID string, entities []models.BatchEntity) ([]models.BatchEntity, error) {
+func (f *FileStorage) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (f *FileStorage) SaveFull(userID string, fullURL string) (string, error) {
+func (f *FileStorage) SaveFull(userID string, fullURL string) (models.URLInfo, error) {
+	var urlInfo models.URLInfo
 	if _, err := os.Stat(filepath.Dir(f.path)); os.IsNotExist(err) {
 		f.log.Infof("Creating folder")
 		err = os.Mkdir(filepath.Dir(f.path), 0755)
@@ -67,7 +66,7 @@ func (f *FileStorage) SaveFull(userID string, fullURL string) (string, error) {
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0755)
 	if err != nil {
 		f.log.Infof("FileStorage Save: error while OpenFile is %s\n", err)
-		return "", err
+		return urlInfo, err
 	}
 	defer func(file *os.File) {
 		err = file.Close()
@@ -77,7 +76,7 @@ func (f *FileStorage) SaveFull(userID string, fullURL string) (string, error) {
 	}(file)
 	f.log.Info("Created file by path", f.path)
 
-	event := Event{
+	event := models.URLInfo{
 		UserID:      userID,
 		UUID:        uuid.NewString(),
 		ShortURL:    util.RandStringRunes(),
@@ -86,18 +85,19 @@ func (f *FileStorage) SaveFull(userID string, fullURL string) (string, error) {
 	data, err := json.Marshal(event)
 	if err != nil {
 		f.log.Infof("FileStorage Save: error while json marshal is %s", err)
-		return "", err
+		return urlInfo, err
 	}
 	data = append(data, '\n')
 	_, err = file.Write(data)
 	if err != nil {
 		f.log.Infof("FileStorage Save: error while write is %s", err)
-		return "", nil
+		return urlInfo, err
 	}
-	return event.ShortURL, nil
+	return event, nil
 }
 
-func (f *FileStorage) GetByShort(shortURL string) (string, error) {
+func (f *FileStorage) GetByShort(shortURL string) (models.URLInfo, error) {
+	var urlInfo models.URLInfo
 	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		f.log.Errorf("FileStorage Get: failed to get from file")
@@ -111,9 +111,15 @@ func (f *FileStorage) GetByShort(shortURL string) (string, error) {
 
 	if err != nil {
 		f.log.Infof("FileStorage Get: error while OpenFile is %s", err)
-		return "", nil
+		return urlInfo, err
 	}
-	return readFromFileByShort(file, shortURL)
+	originalURL, err := readFromFileByShort(file, shortURL)
+	if err != nil {
+		f.log.Errorf("FS GetByShort: failed to get by short %s", err)
+		return urlInfo, err
+	}
+	urlInfo.OriginalURL = originalURL
+	return urlInfo, nil
 }
 
 func (f *FileStorage) Ping() error {
@@ -124,7 +130,7 @@ func readFromFileByShort(file *os.File, shortURL string) (string, error) {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		text := scanner.Text()
-		var item Event
+		var item models.URLInfo
 		err := json.Unmarshal([]byte(text), &item)
 		if err != nil {
 			return "", err
@@ -136,10 +142,10 @@ func readFromFileByShort(file *os.File, shortURL string) (string, error) {
 	return "", nil
 }
 
-func readFromFileByUserID(file *os.File, userID string) ([]models.BatchEntity, error) {
+func readFromFileByUserID(file *os.File, userID string) ([]models.URLInfo, error) {
 	var (
-		item models.BatchEntity
-		urls []models.BatchEntity
+		item models.URLInfo
+		urls []models.URLInfo
 	)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
