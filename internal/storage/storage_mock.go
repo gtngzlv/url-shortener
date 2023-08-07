@@ -50,18 +50,17 @@ func (mr *MockMyStorageMockRecorder) Batch(userID, entities interface{}) *gomock
 }
 
 // DeleteByUserIDAndShort mocks base method.
-func (m *MockMyStorage) DeleteByUserIDAndShort(userID, shortURLs string) (bool, error) {
+func (m *MockMyStorage) DeleteByUserIDAndShort(userID, shortURL string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteByUserIDAndShort", userID, shortURLs)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret := m.ctrl.Call(m, "DeleteByUserIDAndShort", userID, shortURL)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DeleteByUserIDAndShort indicates an expected call of DeleteByUserIDAndShort.
-func (mr *MockMyStorageMockRecorder) DeleteByUserIDAndShort(userID, shortURLs interface{}) *gomock.Call {
+func (mr *MockMyStorageMockRecorder) DeleteByUserIDAndShort(userID, shortURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByUserIDAndShort", reflect.TypeOf((*MockMyStorage)(nil).DeleteByUserIDAndShort), userID, shortURLs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByUserIDAndShort", reflect.TypeOf((*MockMyStorage)(nil).DeleteByUserIDAndShort), userID, shortURL)
 }
 
 // GetBatchByUserID mocks base method.

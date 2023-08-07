@@ -10,8 +10,7 @@ func InitDB(connString, resultURL string) (*sql.DB, string) {
 	if err != nil {
 		return nil, ""
 	}
-	db.SetMaxIdleConns(100)
-	db.SetMaxOpenConns(100)
-	db.SetConnMaxLifetime(time.Second * 10)
+	db.SetMaxOpenConns(10)
+	db.SetConnMaxLifetime(time.Minute * 5)
 	return db, resultURL
 }

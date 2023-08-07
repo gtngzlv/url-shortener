@@ -5,7 +5,6 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/core"
 	"io"
 	"net/http"
-	"sync"
 )
 
 func (a *App) DeleteURLs(w http.ResponseWriter, r *http.Request) {
@@ -13,32 +12,34 @@ func (a *App) DeleteURLs(w http.ResponseWriter, r *http.Request) {
 	userID, err := core.GetUserToken(w, r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	urls, err := io.ReadAll(r.Body)
 	if err != nil {
 		a.log.Errorf("DeleteURLs: failed to read body, %s", err)
 		w.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	err = json.Unmarshal(urls, &inputArray)
 	if err != nil {
 		a.log.Errorf("DeleteURLs: failed to unmarshal input request, %s", err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	var wg sync.WaitGroup
-	wg.Add(1)
-
 	inputCh := addShortURLs(inputArray)
-	go a.MarkAsDeleted(inputCh, userID, &wg)
-	wg.Wait()
+	go a.MarkAsDeleted(inputCh, userID)
 
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (a *App) MarkAsDeleted(inputShort chan string, userID string, wg *sync.WaitGroup) {
-	defer wg.Done()
+func (a *App) MarkAsDeleted(inputShort chan string, userID string) {
 	for v := range inputShort {
-		a.storage.DeleteByUserIDAndShort(userID, v)
+		err := a.storage.DeleteByUserIDAndShort(userID, v)
+		if err != nil {
+			a.log.Infof("Failed to mark deleted by short %s", v)
+		}
 	}
 }
 

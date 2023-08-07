@@ -16,7 +16,7 @@ type MyStorage interface {
 	GetByShort(shortURL string) (models.URLInfo, error)
 	GetBatchByUserID(userID string) ([]models.URLInfo, error)
 	Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error)
-	DeleteByUserIDAndShort(userID string, shortURL string) (bool, error)
+	DeleteByUserIDAndShort(userID string, shortURL string) error
 	Ping() error
 }
 
@@ -40,7 +40,7 @@ func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
 	return &s
 }
 
-func (s *storage) DeleteByUserIDAndShort(userID string, short string) (bool, error) {
+func (s *storage) DeleteByUserIDAndShort(userID string, short string) error {
 	return s.defaultStorage.DeleteByUserIDAndShort(userID, short)
 }
 

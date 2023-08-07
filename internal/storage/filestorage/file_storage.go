@@ -18,7 +18,7 @@ type FileStorage struct {
 	log  zap.SugaredLogger
 }
 
-func (f *FileStorage) DeleteByUserIDAndShort(userID string, short string) (bool, error) {
+func (f *FileStorage) DeleteByUserIDAndShort(userID string, short string) error {
 	//TODO implement me
 	panic("implement me")
 }

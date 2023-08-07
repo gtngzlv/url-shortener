@@ -40,12 +40,7 @@ func GetUserToken(w http.ResponseWriter, r *http.Request) (string, error) {
 			}
 			return []byte(SecretKey), nil
 		})
-	if err != nil {
-		cookie, err = generateCookie()
-		http.SetCookie(w, cookie)
-	}
-
-	if !token.Valid {
+	if err != nil || !token.Valid {
 		cookie, err = generateCookie()
 		http.SetCookie(w, cookie)
 	}

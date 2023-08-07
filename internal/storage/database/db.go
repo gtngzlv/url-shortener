@@ -119,18 +119,18 @@ func (p PostgresDB) GetByShort(shortURL string) (models.URLInfo, error) {
 	return urlEntity, nil
 }
 
-func (p PostgresDB) DeleteByUserIDAndShort(userID string, short string) (bool, error) {
+func (p PostgresDB) DeleteByUserIDAndShort(userID string, short string) error {
 	query := "UPDATE " + tableName + " SET is_deleted=1::bit WHERE userID=$1 and short=$2"
 	rows, err := p.db.Exec(query, userID, short)
 	if err != nil {
-		return false, err
+		return err
 	}
 	if r, err := rows.RowsAffected(); err != nil || r != int64(1) {
 		p.log.Infof("0 rows affected in delete")
-		return false, err
+		return err
 	}
 	p.log.Infof("Marked as deleted link %s", short)
-	return true, nil
+	return nil
 }
 
 func (p PostgresDB) GetShortURL(fullURL string) (models.URLInfo, error) {
