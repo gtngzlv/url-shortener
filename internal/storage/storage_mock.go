@@ -35,25 +35,54 @@ func (m *MockMyStorage) EXPECT() *MockMyStorageMockRecorder {
 }
 
 // Batch mocks base method.
-func (m *MockMyStorage) Batch(entities []models.BatchEntity) ([]models.BatchEntity, error) {
+func (m *MockMyStorage) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Batch", entities)
-	ret0, _ := ret[0].([]models.BatchEntity)
+	ret := m.ctrl.Call(m, "Batch", userID, entities)
+	ret0, _ := ret[0].([]models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Batch indicates an expected call of Batch.
-func (mr *MockMyStorageMockRecorder) Batch(entities interface{}) *gomock.Call {
+func (mr *MockMyStorageMockRecorder) Batch(userID, entities interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Batch", reflect.TypeOf((*MockMyStorage)(nil).Batch), entities)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Batch", reflect.TypeOf((*MockMyStorage)(nil).Batch), userID, entities)
+}
+
+// DeleteByUserIDAndShort mocks base method.
+func (m *MockMyStorage) DeleteByUserIDAndShort(userID, shortURL string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteByUserIDAndShort", userID, shortURL)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteByUserIDAndShort indicates an expected call of DeleteByUserIDAndShort.
+func (mr *MockMyStorageMockRecorder) DeleteByUserIDAndShort(userID, shortURL interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteByUserIDAndShort", reflect.TypeOf((*MockMyStorage)(nil).DeleteByUserIDAndShort), userID, shortURL)
+}
+
+// GetBatchByUserID mocks base method.
+func (m *MockMyStorage) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBatchByUserID", userID)
+	ret0, _ := ret[0].([]models.URLInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBatchByUserID indicates an expected call of GetBatchByUserID.
+func (mr *MockMyStorageMockRecorder) GetBatchByUserID(userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBatchByUserID", reflect.TypeOf((*MockMyStorage)(nil).GetBatchByUserID), userID)
 }
 
 // GetByShort mocks base method.
-func (m *MockMyStorage) GetByShort(shortURL string) (string, error) {
+func (m *MockMyStorage) GetByShort(shortURL string) (models.URLInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetByShort", shortURL)
-	ret0, _ := ret[0].(string)
+	ret0, _ := ret[0].(models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -79,16 +108,16 @@ func (mr *MockMyStorageMockRecorder) Ping() *gomock.Call {
 }
 
 // SaveFull mocks base method.
-func (m *MockMyStorage) SaveFull(fullURL string) (string, error) {
+func (m *MockMyStorage) SaveFull(userID, fullURL string) (models.URLInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveFull", fullURL)
-	ret0, _ := ret[0].(string)
+	ret := m.ctrl.Call(m, "SaveFull", userID, fullURL)
+	ret0, _ := ret[0].(models.URLInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SaveFull indicates an expected call of SaveFull.
-func (mr *MockMyStorageMockRecorder) SaveFull(fullURL interface{}) *gomock.Call {
+func (mr *MockMyStorageMockRecorder) SaveFull(userID, fullURL interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFull", reflect.TypeOf((*MockMyStorage)(nil).SaveFull), fullURL)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveFull", reflect.TypeOf((*MockMyStorage)(nil).SaveFull), userID, fullURL)
 }

@@ -3,7 +3,9 @@ package handlers
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
+	"github.com/gtngzlv/url-shortener/internal/models"
 	"github.com/gtngzlv/url-shortener/internal/storage"
+
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -43,7 +45,11 @@ func TestGetHandler(t *testing.T) {
 			request := httptest.NewRequest(http.MethodGet, "/", nil)
 			request.URL.Path = tt.query
 			w := httptest.NewRecorder()
-			dbMock.EXPECT().GetByShort("").Return("ya.ru", nil)
+
+			mockedDBResult := models.URLInfo{
+				OriginalURL: "ya.ru",
+			}
+			dbMock.EXPECT().GetByShort("").Return(mockedDBResult, nil)
 			handler.GetURL(w, request)
 			res := w.Result()
 			defer res.Body.Close()

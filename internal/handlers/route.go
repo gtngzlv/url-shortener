@@ -44,7 +44,10 @@ func (a *App) reg() {
 
 	a.Router.Get("/{shortID}", a.GetURL)
 	a.Router.Get("/ping", a.Ping)
+	a.Router.Get("/api/user/urls", a.GetURLs)
 
 	a.Router.Post("/", a.PostURL)
 	a.Router.Post("/api/shorten/batch", a.Batch)
+
+	a.Router.Delete("/api/user/urls", a.DeleteURLs)
 }
