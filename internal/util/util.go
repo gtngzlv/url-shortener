@@ -2,25 +2,22 @@ package util
 
 import (
 	"crypto/rand"
-	"log"
 	"math/big"
 )
 
-var defaultLength = 8
+const codeAlphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+const defaultLength = 10
+
+var codeAlphabetLen = big.NewInt(int64(len(codeAlphabet)))
 
 func RandStringRunes() string {
-	var codeAlphabet = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-	b := ""
-	for i := 0; i < defaultLength; i++ {
-		b += string(codeAlphabet[cryptoRandSecure(int64(len(codeAlphabet)))])
-	}
-	return b
-}
-
-func cryptoRandSecure(max int64) int64 {
-	nBig, err := rand.Int(rand.Reader, big.NewInt(max))
+	b := make([]byte, defaultLength)
+	_, err := rand.Read(b)
 	if err != nil {
-		log.Println(err)
+		return ""
 	}
-	return nBig.Int64()
+	for i, v := range b {
+		b[i] = codeAlphabet[int(v)%len(codeAlphabet)]
+	}
+	return string(b)
 }
