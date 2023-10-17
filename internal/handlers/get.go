@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
+
 	"github.com/gtngzlv/url-shortener/internal/core"
 	"github.com/gtngzlv/url-shortener/internal/errors"
-	"net/http"
 )
 
 func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {

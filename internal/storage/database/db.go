@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"database/sql"
+
 	"github.com/jackc/pgerrcode"
 	"github.com/lib/pq"
 	"github.com/pressly/goose"

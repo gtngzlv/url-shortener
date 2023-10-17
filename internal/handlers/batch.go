@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gtngzlv/url-shortener/internal/core"
-	"github.com/gtngzlv/url-shortener/internal/models"
 	"io"
 	"net/http"
+
+	"github.com/gtngzlv/url-shortener/internal/core"
+	"github.com/gtngzlv/url-shortener/internal/models"
 )
 
 func (a *App) Batch(w http.ResponseWriter, r *http.Request) {

@@ -1,8 +1,9 @@
 package storage
 
 import (
-	"github.com/gtngzlv/url-shortener/internal/core"
 	"go.uber.org/zap"
+
+	"github.com/gtngzlv/url-shortener/internal/core"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/errors"

@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gtngzlv/url-shortener/internal/core"
 	"io"
 	"net/http"
+
+	"github.com/gtngzlv/url-shortener/internal/core"
 )
 
 func (a *App) DeleteURLs(w http.ResponseWriter, r *http.Request) {
