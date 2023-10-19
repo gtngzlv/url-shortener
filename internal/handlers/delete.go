@@ -8,7 +8,8 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/core"
 )
 
-func (a *App) DeleteURLs(w http.ResponseWriter, r *http.Request) {
+// DeleteURLs removes array of provided urls
+func (a *app) DeleteURLs(w http.ResponseWriter, r *http.Request) {
 	var inputArray []string
 	userID, err := core.GetUserToken(w, r)
 	if err != nil {
@@ -35,7 +36,8 @@ func (a *App) DeleteURLs(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusAccepted)
 }
 
-func (a *App) MarkAsDeleted(inputShort chan string, userID string) {
+// MarkAsDeleted set flag deleted=true for provided short url
+func (a *app) MarkAsDeleted(inputShort chan string, userID string) {
 	for v := range inputShort {
 		err := a.storage.DeleteByUserIDAndShort(userID, v)
 		if err != nil {

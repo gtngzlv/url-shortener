@@ -1,3 +1,4 @@
+// Package handlers contains public API handlers
 package handlers
 
 import (
@@ -9,7 +10,8 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/models"
 )
 
-func (a *App) Batch(w http.ResponseWriter, r *http.Request) {
+// Batch saves array of provided urls
+func (a *app) Batch(w http.ResponseWriter, r *http.Request) {
 	userID, err := core.GetUserToken(w, r)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

@@ -17,25 +17,26 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/logger"
 )
 
-type App struct {
+type app struct {
 	Router  *chi.Mux
 	cfg     *config.AppConfig
 	log     zap.SugaredLogger
 	storage storage.MyStorage
 }
 
-func NewApp(router *chi.Mux, cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *App {
-	app := &App{
+// NewApp return object of new app
+func NewApp(router *chi.Mux, cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *app {
+	a := &app{
 		router,
 		cfg,
 		log,
 		s,
 	}
-	app.reg()
-	return app
+	a.reg()
+	return a
 }
 
-func (a *App) reg() {
+func (a *app) reg() {
 	a.Router.Use(middleware.Compress(5, "text/html",
 		"application/x-gzip",
 		"text/plain",

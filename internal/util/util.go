@@ -10,6 +10,7 @@ const defaultLength = 10
 
 var codeAlphabetLen = big.NewInt(int64(len(codeAlphabet)))
 
+// RandStringRunes return random strings for short url generation
 func RandStringRunes() string {
 	b := make([]byte, defaultLength)
 	_, err := rand.Read(b)
