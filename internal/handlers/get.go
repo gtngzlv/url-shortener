@@ -2,13 +2,16 @@ package handlers
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
+
 	"github.com/gtngzlv/url-shortener/internal/core"
 	"github.com/gtngzlv/url-shortener/internal/errors"
-	"net/http"
 )
 
-func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
+// GetURL returns full url by provided shortID
+func (a *app) GetURL(w http.ResponseWriter, r *http.Request) {
 	val := chi.URLParam(r, "shortID")
 	url, err := a.storage.GetByShort(val)
 	if err != nil {
@@ -26,7 +29,8 @@ func (a *App) GetURL(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func (a *App) GetURLs(w http.ResponseWriter, r *http.Request) {
+// GetURLs returns array of all saved by user urls
+func (a *app) GetURLs(w http.ResponseWriter, r *http.Request) {
 	userID, err := core.GetUserToken(w, r)
 	a.log.Infof("received userID from cookie %s", userID)
 	if err != nil {

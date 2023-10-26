@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gtngzlv/url-shortener/internal/core"
 	"io"
 	"net/http"
+
+	"github.com/gtngzlv/url-shortener/internal/core"
 
 	"github.com/gtngzlv/url-shortener/internal/errors"
 	"github.com/gtngzlv/url-shortener/internal/models"
 )
 
-func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
+// PostAPIShorten save provided in json format full url and returns short
+func (a *app) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	var (
 		request  models.APIShortenRequest
 		response models.APIShortenResponse
@@ -65,7 +67,8 @@ func (a *App) PostAPIShorten(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-func (a *App) PostURL(w http.ResponseWriter, r *http.Request) {
+// PostURL save provided in text/plain format full url and returns short
+func (a *app) PostURL(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

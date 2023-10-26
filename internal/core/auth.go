@@ -2,28 +2,31 @@ package core
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt/v4"
-	"github.com/google/uuid"
 	"net/http"
 	"time"
+
+	"github.com/golang-jwt/jwt/v4"
+	"github.com/google/uuid"
 )
 
+// Claims contains basic jwt.RegisteredClaims and UserID
 type Claims struct {
 	jwt.RegisteredClaims
 	UserID string
 }
 
-const TokenExp = time.Hour * 1
-const SecretKey = "secret"
-const CookieName = "token"
+const tokenExp = time.Hour * 1
+const secretKey = "secret"
+const cookieName = "token"
 
+// GetUserToken parses user token from incoming request and returns userID and err if exists
 func GetUserToken(w http.ResponseWriter, r *http.Request) (string, error) {
 	var (
 		cookie *http.Cookie
 		err    error
 	)
 
-	cookie, _ = r.Cookie(CookieName)
+	cookie, _ = r.Cookie(cookieName)
 	if cookie == nil {
 		cookie, err = generateCookie()
 		if err != nil {
@@ -38,7 +41,7 @@ func GetUserToken(w http.ResponseWriter, r *http.Request) (string, error) {
 			if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, err
 			}
-			return []byte(SecretKey), nil
+			return []byte(secretKey), nil
 		})
 	if err != nil || !token.Valid {
 		cookie, err = generateCookie()
@@ -54,7 +57,7 @@ func generateCookie() (*http.Cookie, error) {
 		return nil, fmt.Errorf("generateCookie: failed to generate, %s", err)
 	}
 	return &http.Cookie{
-		Name:  CookieName,
+		Name:  cookieName,
 		Value: token,
 		Path:  "/",
 	}, nil
@@ -63,9 +66,9 @@ func generateCookie() (*http.Cookie, error) {
 func generateJWTString() (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TokenExp)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(tokenExp)),
 		},
 		UserID: uuid.NewString(),
 	})
-	return token.SignedString([]byte(SecretKey))
+	return token.SignedString([]byte(secretKey))
 }

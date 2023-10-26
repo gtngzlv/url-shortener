@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// env variables
 var (
 	ServerAddress   = "SERVER_ADDRESS"
 	BaseURL         = "BASE_URL"
@@ -13,6 +14,7 @@ var (
 	DatabaseDSN     = "DATABASE_DSN"
 )
 
+// AppConfig contains environment variables which should be set
 type AppConfig struct {
 	Host            string
 	ResultURL       string
@@ -20,6 +22,7 @@ type AppConfig struct {
 	DatabaseDSN     string
 }
 
+// LoadConfig gets env vars from arguments or environment
 func LoadConfig() *AppConfig {
 	config := &AppConfig{}
 	getArgs(config)

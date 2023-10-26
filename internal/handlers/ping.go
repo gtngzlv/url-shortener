@@ -2,7 +2,8 @@ package handlers
 
 import "net/http"
 
-func (a *App) Ping(w http.ResponseWriter, r *http.Request) {
+// Ping makes test connection to storage
+func (a *app) Ping(w http.ResponseWriter, r *http.Request) {
 	if err := a.storage.Ping(); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return

@@ -1,3 +1,4 @@
+// Package app runs application
 package app
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/storage"
 )
 
+// Run starts application
 func Run() error {
 	router := chi.NewRouter()
 	log := logger.NewLogger()

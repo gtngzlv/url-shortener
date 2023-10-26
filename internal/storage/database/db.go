@@ -2,9 +2,9 @@ package database
 
 import (
 	"context"
+	"database/sql"
 	"time"
 
-	"database/sql"
 	"github.com/jackc/pgerrcode"
 	"github.com/lib/pq"
 	"github.com/pressly/goose"
@@ -15,7 +15,7 @@ import (
 	"github.com/gtngzlv/url-shortener/internal/util"
 )
 
-type PostgresDB struct {
+type postgresDB struct {
 	log       zap.SugaredLogger
 	db        *sql.DB
 	resultURL string
@@ -23,7 +23,8 @@ type PostgresDB struct {
 
 var tableName = "url_storage"
 
-func (p PostgresDB) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
+// Batch saves batch of urls and returns batch of short urls
+func (p postgresDB) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
 	var resultEntities []models.URLInfo
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*70)
 	defer cancel()
@@ -49,7 +50,8 @@ func (p PostgresDB) Batch(userID string, entities []models.URLInfo) ([]models.UR
 	return resultEntities, tx.Commit()
 }
 
-func (p PostgresDB) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
+// GetBatchByUserID returns batch of saved urls for user
+func (p postgresDB) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
 	var (
 		entity models.URLInfo
 		result []models.URLInfo
@@ -77,7 +79,8 @@ func (p PostgresDB) GetBatchByUserID(userID string) ([]models.URLInfo, error) {
 	return result, nil
 }
 
-func (p PostgresDB) SaveFull(userID string, fullURL string) (models.URLInfo, error) {
+// SaveFull saves full error and return error if already exists and short url if not
+func (p postgresDB) SaveFull(userID string, fullURL string) (models.URLInfo, error) {
 	var (
 		urlInfo models.URLInfo
 		err     error
@@ -106,7 +109,8 @@ func (p PostgresDB) SaveFull(userID string, fullURL string) (models.URLInfo, err
 	return urlInfo, nil
 }
 
-func (p PostgresDB) GetByShort(shortURL string) (models.URLInfo, error) {
+// GetByShort returns full url by short url
+func (p postgresDB) GetByShort(shortURL string) (models.URLInfo, error) {
 	p.log.Infof("GetByShort: received url %s", shortURL)
 	var urlEntity models.URLInfo
 	query := "select userID, long, is_deleted from " + tableName + " where short=$1"
@@ -119,7 +123,8 @@ func (p PostgresDB) GetByShort(shortURL string) (models.URLInfo, error) {
 	return urlEntity, nil
 }
 
-func (p PostgresDB) DeleteByUserIDAndShort(userID string, short string) error {
+// DeleteByUserIDAndShort delete full url from db by userID and short url
+func (p postgresDB) DeleteByUserIDAndShort(userID string, short string) error {
 	query := "UPDATE " + tableName + " SET is_deleted=1::bit WHERE userID=$1 and short=$2"
 	rows, err := p.db.Exec(query, userID, short)
 	if err != nil {
@@ -133,7 +138,8 @@ func (p PostgresDB) DeleteByUserIDAndShort(userID string, short string) error {
 	return nil
 }
 
-func (p PostgresDB) GetShortURL(fullURL string) (models.URLInfo, error) {
+// GetShortURL returns short url from db
+func (p postgresDB) GetShortURL(fullURL string) (models.URLInfo, error) {
 	var urlInfo models.URLInfo
 	query := "select short from " + tableName + " where long=$1"
 	row := p.db.QueryRow(query, fullURL)
@@ -143,14 +149,16 @@ func (p PostgresDB) GetShortURL(fullURL string) (models.URLInfo, error) {
 	return urlInfo, nil
 }
 
-func (p PostgresDB) Ping() error {
+// Ping ping db
+func (p postgresDB) Ping() error {
 	if err := p.db.Ping(); err != nil {
 		return err
 	}
 	return nil
 }
 
-func Init(log zap.SugaredLogger, db *sql.DB, resultURL string) *PostgresDB {
+// Init inits sql db
+func Init(log zap.SugaredLogger, db *sql.DB, resultURL string) *postgresDB {
 	if err := goose.SetDialect("postgres"); err != nil {
 		log.Error("unable to set goose dialect", err)
 		return nil
@@ -159,7 +167,7 @@ func Init(log zap.SugaredLogger, db *sql.DB, resultURL string) *PostgresDB {
 		log.Error("failed to load migrations ", err)
 		return nil
 	}
-	return &PostgresDB{
+	return &postgresDB{
 		log:       log,
 		db:        db,
 		resultURL: resultURL,

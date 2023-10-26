@@ -1,3 +1,4 @@
+// Package core responsible for db init, cookie parsing
 package core
 
 import (
@@ -5,6 +6,7 @@ import (
 	"time"
 )
 
+// InitDB sets database environment
 func InitDB(connString, resultURL string) (*sql.DB, string) {
 	db, err := sql.Open("postgres", connString)
 	if err != nil {
