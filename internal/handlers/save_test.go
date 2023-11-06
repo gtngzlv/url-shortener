@@ -6,13 +6,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/errors"
-	"github.com/gtngzlv/url-shortener/internal/logger"
 	"github.com/gtngzlv/url-shortener/internal/models"
 	"github.com/gtngzlv/url-shortener/internal/storage"
 )
@@ -64,9 +61,7 @@ func TestApp_PostURL(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			router := chi.NewRouter()
-			log := logger.NewLogger()
-			cfg := config.AppConfig{}
+			conf := returnTestConfig()
 
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -78,7 +73,7 @@ func TestApp_PostURL(t *testing.T) {
 			request := httptest.NewRequest(tt.methodType, "/", body)
 			w := httptest.NewRecorder()
 
-			handler := NewApp(router, &cfg, log, dbMock)
+			handler := NewApp(conf.router, conf.cfg, conf.log, dbMock)
 			h := handler.PostURL
 
 			h(w, request)
@@ -129,9 +124,7 @@ func TestApp_PostAPIShorten(t *testing.T) {
 		tt := tt
 		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			router := chi.NewRouter()
-			log := logger.NewLogger()
-			cfg := config.AppConfig{}
+			conf := returnTestConfig()
 
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
@@ -143,7 +136,7 @@ func TestApp_PostAPIShorten(t *testing.T) {
 			request := httptest.NewRequest(tt.methodType, "/", body)
 			w := httptest.NewRecorder()
 
-			handler := NewApp(router, &cfg, log, dbMock)
+			handler := NewApp(conf.router, conf.cfg, conf.log, dbMock)
 			h := handler.PostAPIShorten
 
 			h(w, request)
