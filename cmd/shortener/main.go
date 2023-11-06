@@ -15,12 +15,14 @@ var (
 	buildCommit  string
 )
 
+// BuildData хранит в себе информацию о текущей версии, дате и значении коммита
 type BuildData struct {
 	BuildVersion string
 	BuildDate    string
 	BuildCommit  string
 }
 
+// Template - переменная, содержит в себе темплейт для stdout с информацией о текущей сборке
 const Template = `	Build version: {{if .BuildVersion}} {{.BuildVersion}} {{else}} N/A {{end}}
 	Build version: {{if .BuildDate}} {{.BuildDate}} {{else}} N/A {{end}}
 	Build version: {{if .BuildCommit}} {{.BuildCommit}} {{else}} N/A {{end}}
