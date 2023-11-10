@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/crypto/acme/autocert"
 
 	"github.com/gtngzlv/url-shortener/internal/config"
 	"github.com/gtngzlv/url-shortener/internal/handlers"
@@ -19,5 +20,19 @@ func Run() error {
 	cfg := config.LoadConfig()
 	st := storage.Init(log, cfg)
 	app := handlers.NewApp(router, cfg, log, st)
-	return http.ListenAndServe(cfg.Host, app.Router)
+	if cfg.EnableHTTPS != "" {
+		manager := &autocert.Manager{
+			Cache:      autocert.DirCache("cache-dir"),
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(cfg.ServerAddress),
+		}
+		srv := &http.Server{
+			Addr:      cfg.ServerAddress,
+			Handler:   router,
+			TLSConfig: manager.TLSConfig(),
+		}
+		return srv.ListenAndServeTLS("", "")
+	}
+	return http.ListenAndServe(cfg.ServerAddress, app.Router)
+
 }

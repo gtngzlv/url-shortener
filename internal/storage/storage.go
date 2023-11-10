@@ -30,7 +30,7 @@ type storage struct {
 func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
 	var s storage
 	if cfg.DatabaseDSN != "" {
-		db, resultURL := core.InitDB(cfg.DatabaseDSN, cfg.ResultURL)
+		db, resultURL := core.InitDB(cfg.DatabaseDSN, cfg.BaseURL)
 		if db == nil {
 			log.Error("Failed to init DB")
 		}
