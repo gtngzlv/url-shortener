@@ -1,8 +1,11 @@
 package config
 
 import (
+	"encoding/json"
 	"flag"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,15 +16,17 @@ var (
 	FileStoragePath = "FILE_STORAGE_PATH"
 	DatabaseDSN     = "DATABASE_DSN"
 	EnableHTTPS     = "ENABLE_HTTPS"
+	Path            = "CONFIG"
 )
 
 // AppConfig contains environment variables which should be set
 type AppConfig struct {
-	ServerAddress   string
-	BaseURL         string
-	FileStoragePath string
-	DatabaseDSN     string
-	EnableHTTPS     string
+	ServerAddress   string `json:"server_address"`
+	BaseURL         string `json:"base_url"`
+	FileStoragePath string `json:"file_storage_path"`
+	DatabaseDSN     string `json:"database_dsn"`
+	EnableHTTPS     bool   `json:"enable_https"`
+	Path            string
 }
 
 // LoadConfig gets env vars from arguments or environment
@@ -29,6 +34,9 @@ func LoadConfig() *AppConfig {
 	config := &AppConfig{}
 	getArgs(config)
 	getENVs(config)
+	if config.Path != "" {
+		config = getConfigFile(config.Path)
+	}
 	return config
 }
 
@@ -37,14 +45,15 @@ func getArgs(cfg *AppConfig) {
 	flag.StringVar(&cfg.BaseURL, "b", "http://localhost:8080", "Default result URL")
 	flag.StringVar(&cfg.FileStoragePath, "f", "/tmp/short-url-db-7.json", "Default File Storage path")
 	flag.StringVar(&cfg.DatabaseDSN, "d", "", "Database DSN")
-	flag.StringVar(&cfg.EnableHTTPS, "s", "", "Server would be run on TLS")
+	flag.BoolVar(&cfg.EnableHTTPS, "s", false, "Boolean flag to run server on https")
+	flag.StringVar(&cfg.Path, "c", "", "Config path")
 	flag.Parse()
 }
 
 func getENVs(cfg *AppConfig) {
-	envRunAddr := strings.TrimSpace(os.Getenv(ServerAddress))
-	if envRunAddr != "" {
-		cfg.ServerAddress = envRunAddr
+	srvAddr := strings.TrimSpace(os.Getenv(ServerAddress))
+	if srvAddr != "" {
+		cfg.ServerAddress = srvAddr
 	}
 
 	envBaseURL := strings.TrimSpace(os.Getenv(BaseURL))
@@ -62,8 +71,29 @@ func getENVs(cfg *AppConfig) {
 		cfg.DatabaseDSN = databaseDSN
 	}
 
-	enableHTTPS := strings.TrimSpace(os.Getenv(EnableHTTPS))
-	if enableHTTPS != "" {
-		cfg.EnableHTTPS = enableHTTPS
+	httpsVar, err := strconv.ParseBool(os.Getenv(EnableHTTPS))
+	if err != nil {
+		cfg.EnableHTTPS = false
 	}
+	cfg.EnableHTTPS = httpsVar
+
+	confPath := strings.TrimSpace(os.Getenv(Path))
+	if confPath != "" {
+		cfg.Path = confPath
+	}
+}
+
+func getConfigFile(filename string) *AppConfig {
+	var cfg *AppConfig
+	file, err := os.ReadFile(filename)
+	if err != nil {
+		log.Print("getConfigFile: failed to read flie", err)
+		return nil
+	}
+	err = json.Unmarshal(file, cfg)
+	if err != nil {
+		log.Print("getConfigFile: failed to unmarshal config", err)
+		return nil
+	}
+	return cfg
 }
