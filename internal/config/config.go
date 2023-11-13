@@ -35,7 +35,7 @@ func LoadConfig() *AppConfig {
 	getArgs(config)
 	getENVs(config)
 	if config.Path != "" {
-		getConfigFile(config, config.Path)
+		config = getConfigFile(config.Path)
 	}
 	return config
 }
@@ -64,17 +64,19 @@ func getENVs(cfg *AppConfig) {
 	cfg.EnableHTTPS = httpsVar
 }
 
-func getConfigFile(cfg *AppConfig, filename string) {
-	file, err := os.ReadFile(cfg.Path)
+func getConfigFile(filename string) *AppConfig {
+	var cfg *AppConfig
+	file, err := os.ReadFile(filename)
 	if err != nil {
 		log.Print("getConfigFile: failed to read flie", err)
-		return
+		return nil
 	}
 	err = json.Unmarshal(file, cfg)
 	if err != nil {
 		log.Print("getConfigFile: failed to unmarshal config", err)
-		return
+		return nil
 	}
+	return cfg
 }
 
 func returnEnvVar(name string) string {
