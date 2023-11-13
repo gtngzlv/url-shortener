@@ -53,7 +53,7 @@ func getArgs(cfg *AppConfig) {
 func getENVs(cfg *AppConfig) {
 	srvAddr := strings.TrimSpace(os.Getenv(ServerAddress))
 	if srvAddr != "" {
-		cfg.ServerAddress = ServerAddress
+		cfg.ServerAddress = srvAddr
 	}
 
 	envBaseURL := strings.TrimSpace(os.Getenv(BaseURL))
