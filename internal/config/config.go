@@ -51,17 +51,36 @@ func getArgs(cfg *AppConfig) {
 }
 
 func getENVs(cfg *AppConfig) {
-	cfg.ServerAddress = returnEnvVar(ServerAddress)
-	cfg.BaseURL = returnEnvVar(BaseURL)
-	cfg.FileStoragePath = returnEnvVar(FileStoragePath)
-	cfg.DatabaseDSN = returnEnvVar(DatabaseDSN)
-	cfg.Path = returnEnvVar(Path)
+	srvAddr := strings.TrimSpace(os.Getenv(ServerAddress))
+	if srvAddr != "" {
+		cfg.ServerAddress = ServerAddress
+	}
+
+	envBaseURL := strings.TrimSpace(os.Getenv(BaseURL))
+	if envBaseURL != "" {
+		cfg.BaseURL = envBaseURL
+	}
+
+	fileStorageFile := strings.TrimSpace(os.Getenv(FileStoragePath))
+	if fileStorageFile != "" {
+		cfg.FileStoragePath = fileStorageFile
+	}
+
+	databaseDSN := strings.TrimSpace(os.Getenv(DatabaseDSN))
+	if databaseDSN != "" {
+		cfg.DatabaseDSN = databaseDSN
+	}
 
 	httpsVar, err := strconv.ParseBool(os.Getenv(EnableHTTPS))
 	if err != nil {
 		cfg.EnableHTTPS = false
 	}
 	cfg.EnableHTTPS = httpsVar
+
+	confPath := strings.TrimSpace(os.Getenv(Path))
+	if confPath != "" {
+		cfg.Path = confPath
+	}
 }
 
 func getConfigFile(filename string) *AppConfig {
@@ -77,12 +96,4 @@ func getConfigFile(filename string) *AppConfig {
 		return nil
 	}
 	return cfg
-}
-
-func returnEnvVar(name string) string {
-	variable := strings.TrimSpace(os.Getenv(name))
-	if variable != "" {
-		return variable
-	}
-	return ""
 }
