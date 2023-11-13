@@ -20,7 +20,7 @@ func Run() error {
 	cfg := config.LoadConfig()
 	st := storage.Init(log, cfg)
 	app := handlers.NewApp(router, cfg, log, st)
-	if cfg.EnableHTTPS != "" {
+	if cfg.EnableHTTPS {
 		manager := &autocert.Manager{
 			Cache:      autocert.DirCache("cache-dir"),
 			Prompt:     autocert.AcceptTOS,

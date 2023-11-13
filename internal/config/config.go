@@ -1,8 +1,13 @@
 package config
 
 import (
+	"bufio"
+	"encoding/json"
 	"flag"
+	"io"
+	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -13,15 +18,17 @@ var (
 	FileStoragePath = "FILE_STORAGE_PATH"
 	DatabaseDSN     = "DATABASE_DSN"
 	EnableHTTPS     = "ENABLE_HTTPS"
+	Path            = "CONFIG"
 )
 
 // AppConfig contains environment variables which should be set
 type AppConfig struct {
-	ServerAddress   string
-	BaseURL         string
-	FileStoragePath string
-	DatabaseDSN     string
-	EnableHTTPS     string
+	ServerAddress   string `json:"server_address"`
+	BaseURL         string `json:"base_url"`
+	FileStoragePath string `json:"file_storage_path"`
+	DatabaseDSN     string `json:"database_dsn"`
+	EnableHTTPS     bool   `json:"enable_https"`
+	Path            string
 }
 
 // LoadConfig gets env vars from arguments or environment
@@ -29,6 +36,7 @@ func LoadConfig() *AppConfig {
 	config := &AppConfig{}
 	getArgs(config)
 	getENVs(config)
+	getConfigFile(config, config.Path)
 	return config
 }
 
@@ -37,33 +45,54 @@ func getArgs(cfg *AppConfig) {
 	flag.StringVar(&cfg.BaseURL, "b", "http://localhost:8080", "Default result URL")
 	flag.StringVar(&cfg.FileStoragePath, "f", "/tmp/short-url-db-7.json", "Default File Storage path")
 	flag.StringVar(&cfg.DatabaseDSN, "d", "", "Database DSN")
-	flag.StringVar(&cfg.EnableHTTPS, "s", "", "Server would be run on TLS")
+	flag.BoolVar(&cfg.EnableHTTPS, "s", false, "Boolean flag to run server on https")
+	flag.StringVar(&cfg.Path, "c", "", "Config path")
 	flag.Parse()
 }
 
 func getENVs(cfg *AppConfig) {
-	envRunAddr := strings.TrimSpace(os.Getenv(ServerAddress))
-	if envRunAddr != "" {
-		cfg.ServerAddress = envRunAddr
-	}
+	cfg.ServerAddress = returnEnvVar(ServerAddress)
+	cfg.BaseURL = returnEnvVar(BaseURL)
+	cfg.FileStoragePath = returnEnvVar(FileStoragePath)
+	cfg.DatabaseDSN = returnEnvVar(DatabaseDSN)
+	cfg.Path = returnEnvVar(Path)
 
-	envBaseURL := strings.TrimSpace(os.Getenv(BaseURL))
-	if envBaseURL != "" {
-		cfg.BaseURL = envBaseURL
+	httpsVar, err := strconv.ParseBool(os.Getenv(EnableHTTPS))
+	if err != nil {
+		cfg.EnableHTTPS = false
 	}
+	cfg.EnableHTTPS = httpsVar
+}
 
-	fileStorageFile := strings.TrimSpace(os.Getenv(FileStoragePath))
-	if fileStorageFile != "" {
-		cfg.FileStoragePath = fileStorageFile
+func getConfigFile(cfg *AppConfig, filename string) {
+	file, err := os.OpenFile(cfg.Path, os.O_RDONLY, 0666)
+	if err != nil {
+		log.Print("getConfigFile: failed to open file", err)
+		return
 	}
+	defer func(file *os.File) {
+		err = file.Close()
+		if err != nil {
+			log.Print("getConfigFile: failed to close file", err)
+		}
+	}(file)
 
-	databaseDSN := strings.TrimSpace(os.Getenv(DatabaseDSN))
-	if databaseDSN != "" {
-		cfg.DatabaseDSN = databaseDSN
+	data, err := io.ReadAll(bufio.NewReader(file))
+	if err != nil {
+		log.Print("getConfigFile: failed to read from file", err)
+		return
 	}
+	err = json.Unmarshal(data, cfg)
+	if err != nil {
+		log.Print("getConfigFile: failed to unmarshal config", err)
+		return
+	}
+}
 
-	enableHTTPS := strings.TrimSpace(os.Getenv(EnableHTTPS))
-	if enableHTTPS != "" {
-		cfg.EnableHTTPS = enableHTTPS
+func returnEnvVar(name string) string {
+	variable := strings.TrimSpace(os.Getenv(name))
+	if variable != "" {
+		return variable
 	}
+	return ""
 }
