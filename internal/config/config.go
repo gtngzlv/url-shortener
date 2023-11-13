@@ -1,10 +1,8 @@
 package config
 
 import (
-	"bufio"
 	"encoding/json"
 	"flag"
-	"io"
 	"log"
 	"os"
 	"strconv"
@@ -36,7 +34,9 @@ func LoadConfig() *AppConfig {
 	config := &AppConfig{}
 	getArgs(config)
 	getENVs(config)
-	getConfigFile(config, config.Path)
+	if config.Path != "" {
+		getConfigFile(config, config.Path)
+	}
 	return config
 }
 
@@ -65,24 +65,12 @@ func getENVs(cfg *AppConfig) {
 }
 
 func getConfigFile(cfg *AppConfig, filename string) {
-	file, err := os.OpenFile(cfg.Path, os.O_RDONLY, 0666)
+	file, err := os.ReadFile(cfg.Path)
 	if err != nil {
-		log.Print("getConfigFile: failed to open file", err)
+		log.Print("getConfigFile: failed to read flie", err)
 		return
 	}
-	defer func(file *os.File) {
-		err = file.Close()
-		if err != nil {
-			log.Print("getConfigFile: failed to close file", err)
-		}
-	}(file)
-
-	data, err := io.ReadAll(bufio.NewReader(file))
-	if err != nil {
-		log.Print("getConfigFile: failed to read from file", err)
-		return
-	}
-	err = json.Unmarshal(data, cfg)
+	err = json.Unmarshal(file, cfg)
 	if err != nil {
 		log.Print("getConfigFile: failed to unmarshal config", err)
 		return
