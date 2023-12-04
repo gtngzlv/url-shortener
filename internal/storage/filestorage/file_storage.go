@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -14,8 +15,9 @@ import (
 )
 
 type fileStorage struct {
-	path string
-	log  zap.SugaredLogger
+	rwmutex *sync.RWMutex
+	path    string
+	log     zap.SugaredLogger
 }
 
 // Init inits file storage
@@ -207,6 +209,70 @@ func (f *fileStorage) DeleteByUserIDAndShort(userID string, short string) error 
 // Ping return nil
 func (f *fileStorage) Ping() error {
 	return nil
+}
+
+// GetStatistic - returns num of saved urls and users
+func (f *fileStorage) GetStatistic() *models.Statistic {
+	stats := models.Statistic{
+		URLs:  0,
+		Users: 0,
+	}
+	urls := make(map[string]bool)
+	users := make(map[string]bool)
+
+	file, err := os.OpenFile(f.path, os.O_RDWR|os.O_CREATE, 0666)
+	if err != nil {
+		f.log.Errorf("GetStatistic(): failed to get from file")
+	}
+	defer func(file *os.File) {
+		err = file.Close()
+		if err != nil {
+			f.log.Errorf("GetStatistic(): failed to close file, err: %s", err)
+		}
+	}(file)
+
+	if err != nil {
+		f.log.Infof("GetStatistic(): error while OpenFile is %s", err)
+		return nil
+	}
+
+	events := readFromFile(file)
+	if err != nil {
+		return nil
+	}
+	for _, v := range events {
+		_, URLExists := urls[v.OriginalURL]
+		if !URLExists {
+			urls[v.OriginalURL] = true
+			stats.URLs++
+		}
+
+		_, UserExists := users[v.UserID]
+		if !UserExists {
+			users[v.UserID] = true
+			stats.Users++
+		}
+	}
+
+	return &stats
+}
+
+func readFromFile(file *os.File) []models.URLInfo {
+	var (
+		url  models.URLInfo
+		urls []models.URLInfo
+	)
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		text := scanner.Text()
+
+		err := json.Unmarshal([]byte(text), &url)
+		if err != nil {
+			return []models.URLInfo{}
+		}
+		urls = append(urls, url)
+	}
+	return urls
 }
 
 func readFromFileByShort(file *os.File, shortURL string) (models.URLInfo, error) {
