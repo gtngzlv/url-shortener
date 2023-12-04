@@ -29,8 +29,3 @@ type BatchRequest struct {
 type BatchResponse struct {
 	Entities []URLInfo
 }
-
-type Statistic struct {
-	URLs  int `json:"urls"`
-	Users int `json:"users"`
-}

@@ -23,21 +23,6 @@ type postgresDB struct {
 
 var tableName = "url_storage"
 
-// GetStatistic - return num of saved urls and users
-func (p postgresDB) GetStatistic() *models.Statistic {
-	var st *models.Statistic
-	query := "select count(distinct userID), count(*) from " + tableName
-	res, err := p.db.Query(query)
-	if err != nil {
-		return nil
-	}
-	err = res.Scan(&st.Users, &st.URLs)
-	if err != nil {
-		return nil
-	}
-	return st
-}
-
 // Batch saves batch of urls and returns batch of short urls
 func (p postgresDB) Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error) {
 	var resultEntities []models.URLInfo
