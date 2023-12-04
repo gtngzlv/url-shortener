@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"net"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -56,7 +57,18 @@ func (a *app) GetURLs(w http.ResponseWriter, r *http.Request) {
 // GetStats returns count of urls and users
 func (a *app) GetStats(w http.ResponseWriter, r *http.Request) {
 	realIP := r.Header.Get("X-Real-IP")
-	if realIP == "" || realIP != a.cfg.TrustedSubnet {
+	if realIP == "" {
+		w.WriteHeader(http.StatusForbidden)
+		return
+	}
+
+	isTrusted, err := a.checkIPisTrusted(realIP)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	if !isTrusted {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -74,4 +86,21 @@ func (a *app) GetStats(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(resp)
+}
+
+func (a *app) checkIPisTrusted(clientIP string) (bool, error) {
+	_, trustedIP, err := net.ParseCIDR(a.cfg.TrustedSubnet)
+	if err != nil {
+		return false, err
+	}
+
+	parsedIP := net.ParseIP(clientIP)
+	if parsedIP == nil {
+		return false, err
+	}
+
+	if !trustedIP.Contains(parsedIP) {
+		return false, nil
+	}
+	return true, nil
 }
