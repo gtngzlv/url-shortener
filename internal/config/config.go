@@ -12,6 +12,7 @@ var (
 	BaseURL         = "BASE_URL"
 	FileStoragePath = "FILE_STORAGE_PATH"
 	DatabaseDSN     = "DATABASE_DSN"
+	TrustedSubnet   = "TRUSTED_SUBNET"
 )
 
 // AppConfig contains environment variables which should be set
@@ -20,6 +21,7 @@ type AppConfig struct {
 	ResultURL       string
 	FileStoragePath string
 	DatabaseDSN     string
+	TrustedSubnet   string
 }
 
 // LoadConfig gets env vars from arguments or environment
@@ -35,6 +37,7 @@ func getArgs(cfg *AppConfig) {
 	flag.StringVar(&cfg.ResultURL, "b", "http://localhost:8080", "Default result URL")
 	flag.StringVar(&cfg.FileStoragePath, "f", "/tmp/short-url-db-7.json", "Default File Storage path")
 	flag.StringVar(&cfg.DatabaseDSN, "d", "", "Database DSN")
+	flag.StringVar(&cfg.DatabaseDSN, "t", "default", "Trusted subnet")
 	flag.Parse()
 }
 
@@ -57,5 +60,10 @@ func getENVs(cfg *AppConfig) {
 	databaseDSN := strings.TrimSpace(os.Getenv(DatabaseDSN))
 	if databaseDSN != "" {
 		cfg.DatabaseDSN = databaseDSN
+	}
+
+	trustedSubnet := strings.TrimSpace(os.Getenv(TrustedSubnet))
+	if trustedSubnet != "" {
+		cfg.TrustedSubnet = trustedSubnet
 	}
 }
