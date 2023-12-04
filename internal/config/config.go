@@ -28,7 +28,7 @@ type AppConfig struct {
 	DatabaseDSN     string `json:"database_dsn"`
 	EnableHTTPS     bool   `json:"enable_https"`
 	Path            string
-	TrustedSubnet   string `json:"trusted"_subnet`
+	TrustedSubnet   string `json:"trusted_subnet"`
 }
 
 // LoadConfig gets env vars from arguments or environment
