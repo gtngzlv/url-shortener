@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "internal/server";
+
+service UrlShortenerService {
+  rpc Batch(BatchRequest) returns (BatchResponse);
+  rpc DeleteURLs(DeleteURLsRequest) returns (DeleteURLsResponse);
+  rpc GetURL(GetURLRequest) returns (URLInfo);
+  rpc GetURLs(GetURLsRequest) returns (BatchResponse);
+  rpc GetStats(GetStatisticRequest) returns (Statistic);
+  rpc Ping(PingRequest) returns (PingResponse);
+  rpc PostAPIShorten(APIShortenRequest) returns (APIShortenResponse);
+  rpc PostURL(PostURLRequest) returns (PostURLResponse);
+}
+
+// APIShortenRequest model for /api/shorten request
+message APIShortenRequest {
+  string url = 1;
+}
+
+// APIShortenResponse model for /api/shorten response
+message APIShortenResponse {
+  string result = 1;
+}
+
+// URLInfo model for url info
+message URLInfo {
+  string uuid = 1;
+  string userID = 2;
+  string correlation_id = 3;
+  string original_url = 4;
+  string short_url = 5;
+  int32 is_deleted = 6;
+}
+
+// BatchRequest model for batch request
+message BatchRequest {
+  repeated URLInfo entities = 1;
+}
+
+// BatchResponse model for batch response
+message BatchResponse {
+  repeated URLInfo entities = 1;
+}
+
+// Statistic model for statistic response
+message Statistic {
+  int32 urls = 1;
+  int32 users = 2;
+}
+
+message DeleteURLsRequest {
+  repeated string shortURL = 1;
+}
+
+message DeleteURLsResponse {}
+
+message GetURLRequest {
+  string shortURL = 1;
+}
+
+message GetURLsRequest {}
+
+message GetStatisticRequest {}
+
+message PingRequest{}
+message PingResponse{}
+
+message PostURLRequest {
+  string longURL = 1;
+}
+
+message PostURLResponse {
+  string shortURL = 1;
+}
