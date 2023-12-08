@@ -20,6 +20,8 @@ type MyStorage interface {
 	Batch(userID string, entities []models.URLInfo) ([]models.URLInfo, error)
 	DeleteByUserIDAndShort(userID string, shortURL string) error
 	Ping() error
+
+	GetStatistic() *models.Statistic
 }
 
 type storage struct {
@@ -30,7 +32,7 @@ type storage struct {
 func Init(log zap.SugaredLogger, cfg *config.AppConfig) MyStorage {
 	var s storage
 	if cfg.DatabaseDSN != "" {
-		db, resultURL := core.InitDB(cfg.DatabaseDSN, cfg.ResultURL)
+		db, resultURL := core.InitDB(cfg.DatabaseDSN, cfg.BaseURL)
 		if db == nil {
 			log.Error("Failed to init DB")
 		}
@@ -90,4 +92,9 @@ func (s *storage) GetByShort(short string) (models.URLInfo, error) {
 // Ping returns nil to ping
 func (s *storage) Ping() error {
 	return nil
+}
+
+// GetStatistic - returns num of saved urls and users
+func (s *storage) GetStatistic() *models.Statistic {
+	return s.defaultStorage.GetStatistic()
 }

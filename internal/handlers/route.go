@@ -24,6 +24,9 @@ type app struct {
 	storage storage.MyStorage
 }
 
+type Handlers interface {
+}
+
 // NewApp return object of new app
 func NewApp(router *chi.Mux, cfg *config.AppConfig, log zap.SugaredLogger, s storage.MyStorage) *app {
 	a := &app{
